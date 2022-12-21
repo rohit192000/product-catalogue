@@ -3,19 +3,19 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const dotenv = require('dotenv');
 const mysql = require('mysql');
+// const bodyParser = require('body-parser');
+const dotenv = require('dotenv').config();
 
 const productsRouter = require('./routes/products');
 const variantsRouter = require('./routes/variants');
 
 const app = express();
 
-
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
 
 app.use(logger('dev'));
 app.use(express.json());
