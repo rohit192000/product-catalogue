@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const Products = require("../model/products");
+const productController = require("../controller/productController");
+const Products = require('../model/products')
 
 router.get("/", async (req, res) => {
   try {
@@ -12,21 +13,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/add", async (req, res) => {
-  try {
-    await new Products({
-      name: "Leather Driver Saddle Loafers",
-      slug: "leather-driver-saddle-loafers-tan",
-      featured_image: "image.jpeg",
-      category: "Mens Footwear",
-    })
-      .save()
-      .then((product) => {
-        res.send(product.toJSON());
-      });
-  } catch (err) {
-    console.log(err);
-  }
-});
+router.post("/add", productController);
 
 module.exports = router;
