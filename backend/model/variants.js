@@ -1,11 +1,11 @@
-const bookshelf = require('./dbconfig');
+const bookshelf = require("./dbconfig");
 
 const Variants = bookshelf.Model.extend({
-    tableName : "variants",
+  tableName: "variants",
 
-    products : function () {
-        return this.belongsTo('Products', 'products_id', 'id')
-    }
-})
+  products: function () {
+    return this.belongsTo("Products", "products_id", "id");
+  },
+});
 
 module.exports = bookshelf.model("Variants", Variants);
