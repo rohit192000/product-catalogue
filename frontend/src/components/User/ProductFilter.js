@@ -13,11 +13,11 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import CategoryFilter from "./Filter/CategoryFilter";
 import ColorFilter from "./Filter/ColorFilter";
 import PriceFilter from "./Filter/PriceFilter";
+import SearchBar from "./SearchBar";
 
 const ProductFilter = (props) => {
   const drawerWidth = 240;
@@ -86,6 +86,13 @@ const ProductFilter = (props) => {
           <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} component="div">
             MVT & Fashion
           </Typography>
+          <SearchBar
+            sx={{ flexGrow: 2 }}
+            setProducts={props.setProducts}
+            limit={props.limit}
+            setProductArray={props.setProductArray}
+            setLoading={props.setLoading}
+          />
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -93,7 +100,7 @@ const ProductFilter = (props) => {
             onClick={handleDrawerOpen}
             sx={{ ...(open && { display: "none" }) }}
           >
-            <MenuIcon/>
+            <MenuIcon />
           </IconButton>
         </Toolbar>
       </AppBar>
@@ -126,9 +133,35 @@ const ProductFilter = (props) => {
         </DrawerHeader>
         <Divider />
         <List>
-          {[<PriceFilter setProducts={props.setProducts}/>, <CategoryFilter setProducts={props.setProducts}/>, <ColorFilter setProducts={props.setProducts}/> ].map((text, index) => (
-            <ListItem key={index} disablePadding sx={{padding : '7px'}}>
-                <ListItemText primary={text} />
+          {[
+            <PriceFilter
+              setProducts={props.setProducts}
+              limit={props.limit}
+              setLoading={props.setLoading}
+              setProductArray={props.setProductArray}
+              setLimit={props.setLimit}
+            />,
+            <CategoryFilter
+              products={props.products}
+              setProducts={props.setProducts}
+              limit={props.limit}
+              setLoading={props.setLoading}
+              productArray={props.productArray}
+              setProductArray={props.setProductArray}
+              setLimit={props.setLimit}
+            />,
+            <ColorFilter
+              products={props.products}
+              setProducts={props.setProducts}
+              limit={props.limit}
+              setLoading={props.setLoading}
+              productArray={props.productArray}
+              setProductArray={props.setProductArray}
+              setLimit={props.setLimit}
+            />,
+          ].map((text, index) => (
+            <ListItem key={index} disablePadding sx={{ padding: "7px" }}>
+              <ListItemText primary={text} />
             </ListItem>
           ))}
         </List>

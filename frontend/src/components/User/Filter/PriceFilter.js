@@ -9,12 +9,10 @@ const PriceFilter = (props) => {
   });
 
   useEffect(() => {
-    console.log(value);
-  }, [value]);
-  useEffect(() => {
-    if (value.length !== 0) {
+    if (value.low !== "" || value.high !== "") {
+      props.setLimit(0);
       axios
-        .post("http://localhost:3001/variants/price/filter", {
+      .post("http://localhost:3001/variants/price/filter", {
           price: value,
         })
         .then((response) => {
@@ -30,11 +28,13 @@ const PriceFilter = (props) => {
               ],
             });
           });
-          props.setProducts(item);
-          console.log(response.data);
+          props.setProductArray(item);
+          // console.log(response.data);
         });
-    } else {
-      getProducts(props.setProducts);
+      } else {
+        props.setLoading(true)
+        props.setProductArray([])
+        // getProducts(props.setProducts, props.limit);
     }
   }, [value]);
   return (

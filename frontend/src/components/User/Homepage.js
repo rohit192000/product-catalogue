@@ -1,63 +1,80 @@
-import React, { useEffect, useState } from "react";
+import { Typography } from "@mui/material";
+import React, { useEffect, useRef, useState } from "react";
 import { getProducts } from "./FetchAll";
-import { ImageList, ImageListItem, ImageListItemBar, Box } from "@mui/material";
+import Images from "./Images";
+
 import ProductFilter from "./ProductFilter";
 const Homepage = () => {
+  const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
-  function handleScroll() {
-    if (
-      window.innerHeight + document.documentElement.scrollTop !==
-      document.documentElement.offsetHeight
-    )
-      return;
-    console.log("Fetch more list items!");
-  }
+  const [productArray, setProductArray] = useState([]);
+  const [limit, setLimit] = useState(0);
+  const [lastElement, setLastElement] = useState(null);
+
+  const observer = useRef(
+    new IntersectionObserver((entries) => {
+      const first = entries[0];
+      if (first.isIntersecting) {
+        setTimeout(() => {
+          setLimit((prevState) => prevState + 10);
+        }, 1000);
+      }
+    })
+  );
+
   useEffect(() => {
-    getProducts(setProducts);
-  }, []);
+    const currentElement = lastElement;
+    const currentObserver = observer.current;
+
+    if (currentElement) {
+      currentObserver.observe(currentElement);
+    }
+
+    return () => {
+      if (currentElement) {
+        currentObserver.unobserve(currentElement);
+      }
+    };
+  }, [lastElement]);
+
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    // console.log(limit)
+    getProducts(setProducts, limit, setLoading);
+    setProductArray((prevState) => [
+      ...prevState,
+      ...products.map((product) => product),
+    ]);
+    if(!loading){
+      // console.log("hi")
+      setLimit(0)
+    }
+    // console.log("Homepage : " , productArray);
+  }, [limit]);
+
   return (
     <>
-      <Box
-        sx={{
-          width: "100%",
-          height: "100%",
-          background: "white",
-        }}
-      >
-        <ProductFilter setProducts={setProducts} />
-        <ImageList
-          sx={{
-            width: "100%",
-            height: "30%",
-            display: "flex",
-            justifyContent: "center",
-            flexFlow: "row wrap",
-          }}
-          cols={5}
-        >
-          {products.map((product) => (
-            <ImageListItem
-              key={product.featured_image}
-              sx={{ width: "18%", padding: "5px" }}
-            >
-              <img
-                src={`http://localhost:3001/images/${product.featured_image}`}
-                alt={product.name}
-                loading="lazy"
-              />
-              <ImageListItemBar
-                title={<span>Color : {product.variants[0].color}</span>}
-                subtitle={<span>Price : $ {product.variants[0].price}</span>}
-                position="below"
-              />
-            </ImageListItem>
-          ))}
-        </ImageList>
-      </Box>
+      {/**
+       */}
+      <ProductFilter
+        products={products}
+        setProducts={setProducts}
+        limit={limit}
+        setLimit={setLimit}
+        setLoading={setLoading}
+        productArray={productArray}
+        setProductArray={setProductArray}
+      />
+      <Images
+        productArray={productArray}
+        id="imageList"
+        setLastElement={setLastElement}
+      />
+
+      {loading && (
+        <Typography variant="p" sx={{ marginLeft: "40%" }} ref={setLastElement}>
+          fetching images...
+        </Typography>
+      )}
     </>
   );
 };
