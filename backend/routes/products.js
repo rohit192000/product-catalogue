@@ -4,12 +4,25 @@ const productController = require("../controller/productController");
 const Products = require("../model/products");
 const variants = require("../model/variants");
 
-router.get("/", async (req, res) => {
+router.get("/limit/:limit", async (req, res) => {
   try {
-    await new Products().fetchAll({withRelated : 'variants'}).then((products) => {
-      res.send(JSON.stringify(products));
-      console.log(JSON.stringify(products))
-    });
+    await new Products()
+    .fetchPage({
+      pageSize : 10,
+      page : 1,
+      offset : req.params.limit,
+      limit: 10,
+      withRelated: "variants",
+    })
+    .then((products) => {
+        if(req.params.limit >= products.pagination.rowCount){
+          res.send(" ")
+          return;
+        }
+        res.send(JSON.stringify(products));
+        console.log(products)
+        console.log(products.pagination.rowCount)
+      });
   } catch (err) {
     console.log(err);
   }
@@ -17,16 +30,16 @@ router.get("/", async (req, res) => {
 
 router.post("/add", productController);
 
-router.get("/category", async (req, res) => {
+router.get("/categories", async (req, res) => {
   try {
-    await new Products("category")
+    await new Products()
       .query({
         groupBy: "category",
       })
-      .fetchAll()
+      .fetchAll({ columns: ["category"] })
       .then((category) => {
-        res.send(category.toJSON());
         console.log(category.toJSON());
+        res.send(category.toJSON());
       });
   } catch (err) {
     console.log(err);
@@ -36,7 +49,7 @@ router.get("/category", async (req, res) => {
 router.post("/category/filter", async (req, res) => {
   try {
     await Products.where("category", "IN", req.body.categories)
-      .fetchPage({withRelated : 'variants'})
+      .fetchPage({ withRelated: "variants" })
       .then((category) => {
         res.send(category.toJSON());
       });
@@ -45,5 +58,17 @@ router.post("/category/filter", async (req, res) => {
   }
 });
 
+router.get("/search/:name", async (req, res) => {
+  try {
+    await new Products()
+      .where("name", "REGEXP", "^" + req.params.name)
+      .fetchAll({ withRelated: "variants" })
+      .then((data) => {
+        res.send(data.toJSON());
+      });
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 module.exports = router;
