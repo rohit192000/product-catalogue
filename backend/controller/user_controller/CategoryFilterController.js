@@ -2,7 +2,7 @@ const Products = require("../../model/products");
 
 const CategoryFilter = async (req, res) => {
   try {
-    await Products.where("category", "IN", req.body.categories)
+    await Products.where("category", "=", req.body.categories)
       .fetchPage({ withRelated: "variants" })
       .then((category) => {
         res.send(category.toJSON());
