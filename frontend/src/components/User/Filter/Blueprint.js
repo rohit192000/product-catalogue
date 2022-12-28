@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect} from "react";
 import axios from "axios";
 import {
   Checkbox,
@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 
 import { ExpandMore } from "@mui/icons-material";
-import { getProducts } from "../FetchAll";
 const Blueprint = (props) => {
   const [check, setCheck] = useState(true);
   const [filterProduct, setFilterProduct] = useState(new Set());
@@ -23,7 +22,7 @@ const Blueprint = (props) => {
       setFilterProduct((prevState) => new Set(prevState).add(attribute));
     } else {
       filterProduct.delete(attribute);
-      console.log(filterProduct);
+      // console.log(filterProduct);
       if (check) {
         setCheck(false);
       } else {
@@ -72,7 +71,7 @@ const Blueprint = (props) => {
     } else {
       props.setProductArray([]);
       props.setLoading(true);
-      console.log(props.productArray);
+      // console.log(props.productArray);
     }
   }, [filterProduct, check]);
 

@@ -10,6 +10,7 @@ const PriceFilter = (props) => {
 
   useEffect(() => {
     if (value.low !== "" || value.high !== "") {
+      props.setLoading(false)
       props.setLimit(0);
       axios
       .post("http://localhost:3001/variants/price/filter", {

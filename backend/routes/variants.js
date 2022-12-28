@@ -59,7 +59,7 @@ router.post("/price/filter", async (req, res) => {
       .query(function (qb) {
         if (low > high && low !== 0) {
           qb.where("price", ">", low);
-        } else if (low === 0) {
+        } else if (low === 0 && high !== 0) {
           qb.where("price", "<", high);
         } else {
           qb.whereBetween("price", [low, high]);

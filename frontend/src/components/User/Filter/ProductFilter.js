@@ -14,10 +14,10 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-import CategoryFilter from "./Filter/CategoryFilter";
-import ColorFilter from "./Filter/ColorFilter";
-import PriceFilter from "./Filter/PriceFilter";
-import SearchBar from "./SearchBar";
+import CategoryFilter from "./CategoryFilter";
+import ColorFilter from "./ColorFilter";
+import PriceFilter from "./PriceFilter";
+import SearchBar from "../SearchBar";
 
 const ProductFilter = (props) => {
   const drawerWidth = 240;

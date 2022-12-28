@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { getProducts } from "./FetchAll";
 import Images from "./Images";
 
-import ProductFilter from "./ProductFilter";
+import ProductFilter from "./Filter/ProductFilter";
 const Homepage = () => {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
