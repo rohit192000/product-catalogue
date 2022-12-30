@@ -1,5 +1,6 @@
-import React from "react";
+import React, { lazy, Suspense, useState } from "react";
 import {
+  Button,
   Paper,
   Table,
   TableBody,
@@ -8,9 +9,9 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import VariantModal from "./VariantModal";
-
+const VariantModal = React.lazy(() => import("./VariantModal"));
 const Variant = (props) => {
+  const [open, setOpen] = useState(false);
   return (
     <>
       <TableContainer component={Paper} sx={{ maxHeight: 440 }}>
@@ -42,15 +43,24 @@ const Variant = (props) => {
             ))}
             <TableRow>
               <TableCell colSpan={5} align="center">
-                <VariantModal
-                  variants={props.variants}
-                  setVariants={props.setVariants}
-                />
+                <Button variant="outlined" color="primary" onClick={() => setOpen(true)}>
+                  Add Variant
+                </Button>
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
+      {open && (
+        <Suspense fallback={<div>Modal...</div>}>
+          <VariantModal
+            variants={props.variants}
+            setVariants={props.setVariants}
+            setOpen={setOpen}
+            open={open}
+          />
+        </Suspense>
+      )}
     </>
   );
 };

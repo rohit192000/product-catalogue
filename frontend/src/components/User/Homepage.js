@@ -1,28 +1,44 @@
 import { Typography } from "@mui/material";
-import React, { useEffect, useRef, useState } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import useDidMountEffect from "./CustomHooks/useDidMountEffect";
 import { getProducts } from "./FetchAll";
-import Images from "./Images";
-
 import ProductFilter from "./Filter/ProductFilter";
+const Images = lazy(() => import("./Images"));
+
 const Homepage = () => {
-  const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  // const [products, setProducts] = useState([]);
   const [productArray, setProductArray] = useState([]);
-  const [limit, setLimit] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [lastElement, setLastElement] = useState(null);
+  const [productMap, setProductMap] = useState([]);
+  const [checkedArray, setCheckedArray] = useState([]);
+  const [filterState, setFilterState] = useState(false);
 
   const observer = useRef(
     new IntersectionObserver((entries) => {
+      console.log(" ");
+      console.log("Observer Function running..");
+      // console.log(entries)
       const first = entries[0];
-      if (first.isIntersecting) {
-        setTimeout(() => {
-          setLimit((prevState) => prevState + 10);
-        }, 1000);
+      console.log("type of checked array : ", typeof(checkedArray))
+      if (Object.keys(checkedArray).length !== 0) {
+        console.log("Hit the filter api with new offset");
+      } else {
+        // do this
+        if (first.isIntersecting) {
+          setTimeout(() => {
+            console.log("InterSection Observer updates the offset by 10");
+            setOffset((prevState) => prevState + 10);
+          }, 1000);
+        }
       }
     })
   );
-
-  useEffect(() => {
+  useDidMountEffect(() => {
+    console.log("Checked Array : ", checkedArray);
+  }, [checkedArray]);
+  useDidMountEffect(() => {
     const currentElement = lastElement;
     const currentObserver = observer.current;
 
@@ -38,37 +54,43 @@ const Homepage = () => {
   }, [lastElement]);
 
   useEffect(() => {
-    // console.log(limit)
-    getProducts(setProducts, limit, setLoading);
-    setProductArray((prevState) => [
-      ...prevState,
-      ...products.map((product) => product),
-    ]);
-    if(!loading){
-      // console.log("hi")
-      setLimit(0)
+    console.log(" ");
+    console.log("useEffect with offset");
+    console.log("if conditions with loading as true/false");
+    getProducts(setProductArray, offset, setLoading);
+    console.log(loading);
+    if (!loading) {
+      setOffset(0);
     }
-    // console.log("Homepage : " , productArray);
-  }, [limit]);
+  }, [offset]);
 
   return (
     <>
       {/**
        */}
       <ProductFilter
-        products={products}
-        setProducts={setProducts}
-        limit={limit}
-        setLimit={setLimit}
+        loading={loading}
+        productMap={productMap}
+        offset={offset}
+        setOffset={setOffset}
         setLoading={setLoading}
         productArray={productArray}
         setProductArray={setProductArray}
+        setProductMap={setProductMap}
+        checkedArray={checkedArray}
+        setCheckedArray={setCheckedArray}
       />
-      <Images
-        productArray={productArray}
-        id="imageList"
-        setLastElement={setLastElement}
-      />
+      <Suspense>
+        <Images
+          loading={loading}
+          productArray={productArray}
+          id="imageList"
+          setLastElement={setLastElement}
+          offset={offset}
+          productMap={productMap}
+          setProductMap={setProductMap}
+        />
+      </Suspense>
 
       {loading && (
         <Typography variant="p" sx={{ marginLeft: "40%" }} ref={setLastElement}>

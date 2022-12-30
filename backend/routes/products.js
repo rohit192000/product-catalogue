@@ -20,7 +20,7 @@ router.post("/add", productController);
 
 router.get("/categories", FetchCategory);
 
-router.post("/category/filter", CategoryFilter);
+router.post("/category/filter/:offset", CategoryFilter);
 
 router.get("/search/:name", Search);
 

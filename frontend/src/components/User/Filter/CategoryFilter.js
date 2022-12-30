@@ -10,17 +10,22 @@ const CategoryFilter = (props) => {
   }, []);
   return (
     <>
+      {/**
+       */}
       <Blueprint
         product={category}
         setAttribute={setCategory}
         attribute={"category"}
         productArray={props.productArray}
         setProductArray={props.setProductArray}
-        products={props.products}
-        setProducts={props.setProducts}
         setLoading={props.setLoading}
-        limit={props.limit}
-        setLimit={props.setLimit}
+        offset={props.offset}
+        setOffset={props.setOffset}
+        setProductMap={props.setProductMap}
+        loading={props.loading}
+        checkedArray={props.checkedArray}
+        setCheckedArray={props.setCheckedArray}
+        productMap={props.productMap}
       />
     </>
   );

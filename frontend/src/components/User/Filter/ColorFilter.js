@@ -19,11 +19,15 @@ const ColorFilter = (props) => {
         attribute={"color"}
         productArray={props.productArray}
         setProductArray={props.setProductArray}
-        products={props.products}
-        setProducts={props.setProducts}
         setLoading={props.setLoading}
-        limit={props.limit}
-        setLimit={props.setLimit}      />
+        offset={props.offset}
+        setOffset={props.setOffset}
+        setProductMap={props.setProductMap}
+        loading={props.loading}
+        productMap={props.productMap}
+        checkedArray={props.checkedArray}
+        setCheckedArray={props.setCheckedArray}
+      />
     </>
   );
 };

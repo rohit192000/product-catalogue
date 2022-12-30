@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Box, TextField, Button, Stack } from "@mui/material";
 import Variant from "./Variant";
-import { saveFile1 } from "./AddImage";
 const Form = (props) => {
   const [variants, setVariants] = useState([]);
 
@@ -20,7 +19,9 @@ const Form = (props) => {
   });
 
   const addFile = (e) => {
-    saveFile1(e, setFile);
+    import('./AddImage').then(addImage => {
+      addImage.saveFile1(e, setFile);
+    })
   };
 
   const [add, setAdd] = useState(false);

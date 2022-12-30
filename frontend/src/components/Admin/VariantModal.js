@@ -10,7 +10,6 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { saveFile1 } from "./AddImage";
 const VariantModal = (props) => {
   const style = {
     height: "70%",
@@ -24,9 +23,8 @@ const VariantModal = (props) => {
     boxShadow: 24,
     p: 4,
   };
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  // const handleOpen = () => setOpen(true);
+  const handleClose = () => props.setOpen(false);
 
   // FILE UPLOAD
   const [file, setFile] = useState({
@@ -35,7 +33,9 @@ const VariantModal = (props) => {
   });
 
   const addFile = (e) => {
-    saveFile1(e, setFile);
+    import("./AddImage").then((addImage) => {
+      addImage.saveFile1(e, setFile);
+    });
   };
 
   const addVariant = (e) => {
@@ -53,15 +53,12 @@ const VariantModal = (props) => {
     ]);
   };
   useEffect(() => {
-    console.log(props.variants);
-  }, [props.variants]);
+    console.log(props.open);
+  }, [props.open]);
   return (
     <div>
-      <Button variant="outlined" color="primary" onClick={handleOpen}>
-        Add Variant
-      </Button>
       <Modal
-        open={open}
+        open={true}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"

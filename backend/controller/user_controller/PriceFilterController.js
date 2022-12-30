@@ -1,5 +1,5 @@
 const Variants = require("../../model/variants");
-
+const Products = require("../../model/products")
 const PriceFilter = async (req, res) => {
   try {
     var high = Number(req.body.price.high);
@@ -8,7 +8,7 @@ const PriceFilter = async (req, res) => {
     if (low > high) {
       console.log("low is high");
     }
-    await new Variants("price")
+    var ids = await new Variants("price")
       .query(function (qb) {
         if (low > high && low !== 0) {
           qb.where("price", ">", low);
@@ -25,11 +25,15 @@ const PriceFilter = async (req, res) => {
         orderBy: "price",
       })
       .fetchAll({
-        withRelated: "products",
-        columns: ["color", "price", "products_id"],
+        columns: ["products_id"],
+      });
+    ids = ids.toJSON().map((a) => a.products_id);
+    await Products.where("id", "IN", ids)
+      .fetchPage({
+        withRelated: ["variants"]
       })
-      .then((product) => {
-        res.send(product.toJSON());
+      .then((products) => {
+        res.send(products.toJSON());
       });
   } catch (err) {
     console.log(err);

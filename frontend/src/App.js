@@ -1,19 +1,20 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Form from "./components/Admin/Form";
-import VariantModal from "./components/Admin/VariantModal";
-import Homepage from "./components/User/Homepage";
-
+const Homepage = lazy(() => import("./components/User/Homepage"));
+const Form = lazy(() => import("./components/Admin/Form"));
+const VariantModal = lazy(() => import("./components/Admin/VariantModal"));
 const App = () => {
+  console.log(window.location.href);
   return (
     <div className="App">
       <Router>
-        <Routes>
-          <Route path="/admin" element={<Form />} />
-          <Route path="/modal" element={<VariantModal />} />
-
-          <Route path="/" element={<Homepage />} />
-        </Routes>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route path="/admin" element={<Form />} />
+            <Route path="/" element={<Homepage />} />
+            <Route path="/VariantModal" element={<VariantModal />} />
+          </Routes>
+        </Suspense>
       </Router>
     </div>
   );

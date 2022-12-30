@@ -1,41 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { Typography, Box, TextField, FormControl } from "@mui/material";
-import { getProducts } from "../FetchAll";
+import useDidMountEffect from "../CustomHooks/useDidMountEffect";
 const PriceFilter = (props) => {
   const [value, setValue] = useState({
     low: "",
     high: "",
   });
 
-  useEffect(() => {
+  // This is an custom hook which doesn't run on initial render
+  useDidMountEffect(() => {
     if (value.low !== "" || value.high !== "") {
-      props.setLoading(false)
-      props.setLimit(0);
+      props.setProductArray([]);
+      props.setLoading(false);
+      console.log(props.offset)
       axios
-      .post("http://localhost:3001/variants/price/filter", {
+        .post("http://localhost:3001/variants/price/filter", {
           price: value,
         })
         .then((response) => {
-          let item = [];
-          response.data.forEach((data) => {
-            item.push({
-              featured_image: data.products.featured_image,
-              variants: [
-                {
-                  color: data.color,
-                  price: data.price,
-                },
-              ],
-            });
-          });
-          props.setProductArray(item);
-          // console.log(response.data);
-        });
-      } else {
-        props.setLoading(true)
-        props.setProductArray([])
-        // getProducts(props.setProducts, props.limit);
+          console.log("Fetched Data : ", response.data);
+          console.log("value length: ", value.length)
+          props.setProductArray(() => response.data);
+        })
+    } else {
+      console.log(props.offset)
+      props.setLoading(true);
+      props.setOffset(0)
     }
   }, [value]);
   return (

@@ -6,7 +6,6 @@ import {
   InputAdornment,
   InputLabel,
   OutlinedInput,
-  TextField,
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { getProducts } from "./FetchAll";
@@ -16,10 +15,6 @@ const SearchBar = (props) => {
   const handleChange = (e) => {
     e.preventDefault();
     setSearchInput(e.target.value);
-    console.log(searchInput);
-    if (searchInput.length < 0) {
-        getProducts(props.setProducts, props.limit)
-    }
   };
 
   const searchProduct = () => {
@@ -28,7 +23,7 @@ const SearchBar = (props) => {
       .get("http://localhost:3001/products/search/" + searchInput)
       .then((response) => {
         console.log(response.data);
-        props.setProductArray(response.data);
+        props.setProductMap(() => response.data);
       });
   };
   return (
