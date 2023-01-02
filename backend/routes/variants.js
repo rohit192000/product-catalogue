@@ -16,7 +16,7 @@ const {
 router.get("/", FetchVariant);
 router.get("/color", FetchColor);
 
-router.post("/color/filter", ColorFilter);
+router.post("/color/filter/:offset", ColorFilter);
 router.post("/price/filter", PriceFilter);
 
 module.exports = router;

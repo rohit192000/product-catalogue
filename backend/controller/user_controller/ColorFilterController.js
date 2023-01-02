@@ -2,8 +2,9 @@ const Variants = require("../../model/variants");
 const Products = require("../../model/products");
 const ColorFilter = async (req, res) => {
   try {
-    console.log(req.body.colors);
-    var ids = await Variants.where("color", "=", req.body.attribute).fetchAll({
+    console.log(req.body.attribute);
+    console.log(req.params.offset);
+    var ids = await Variants.where("color", "IN", req.body.attribute).fetchAll({
       columns: ["products_id"],
     });
     ids = ids.toJSON().map((a) => a.products_id);
@@ -12,10 +13,10 @@ const ColorFilter = async (req, res) => {
         withRelated: [
           {
             variants: (qb) => {
-              qb.where("color", "=", req.body.attribute);
+              qb.where("color", "IN", req.body.attribute);
             },
-          },
-        ],
+          }, 
+        ], offset : req.params.offset, limit : 10
       })
       .then((products) => {
         res.send(products.toJSON());
