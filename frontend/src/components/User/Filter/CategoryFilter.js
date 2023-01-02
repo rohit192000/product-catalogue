@@ -26,6 +26,7 @@ const CategoryFilter = (props) => {
         checkedArray={props.checkedArray}
         setCheckedArray={props.setCheckedArray}
         productMap={props.productMap}
+        filterState={props.filterState}
       />
     </>
   );

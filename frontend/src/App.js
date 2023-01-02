@@ -6,7 +6,7 @@ const VariantModal = lazy(() => import("./components/Admin/VariantModal"));
 const App = () => {
   console.log(window.location.href);
   return (
-    <div className="App">
+    <div className="App" style={{ background: "#dfd3c3" }}>
       <Router>
         <Suspense fallback={<div>Loading...</div>}>
           <Routes>

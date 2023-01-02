@@ -80,10 +80,10 @@ const ProductFilter = (props) => {
     setOpen(false);
   };
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", background: "#DFD3C3" }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
-        <Toolbar>
+      <AppBar position="fixed" open={open} >
+        <Toolbar style={{background : '#85586F'}} >
           <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} component="div">
             MVT & Fashion
           </Typography>
@@ -158,6 +158,7 @@ const ProductFilter = (props) => {
                   productMap={props.productMap}
                   checkedArray={props.checkedArray}
                   setCheckedArray={props.setCheckedArray}
+                  filterState={props.filterState}
                 />
               </Suspense>,
               <Suspense>
@@ -172,6 +173,7 @@ const ProductFilter = (props) => {
                   checkedArray={props.checkedArray}
                   setCheckedArray={props.setCheckedArray}
                   setProductMap={props.setProductMap}
+                  filterState={props.filterState}
                 />
               </Suspense>,
             ].map((text, index) => (

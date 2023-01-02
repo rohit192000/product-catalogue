@@ -22,8 +22,8 @@ const Blueprint = (props) => {
     console.log(" ");
     console.log("filterByAttribute is running...");
     if (e) {
-      setFilterOffset(() => 0)
-      props.setProductArray(() => [])
+      setFilterOffset(() => 0);
+      props.setProductArray(() => []);
       setFilterProduct((prevState) => new Set(prevState).add(attribute));
       // props.setCheckedArray((prevState) => new Set(prevState).add(attribute));
     } else {
@@ -64,9 +64,11 @@ const Blueprint = (props) => {
     console.log(filterProduct.size);
     if (filterProduct.size !== 0) {
       if (filterProduct.size === 1) {
-        props.setProductArray(() => []);
+        console.log("empty the products array");
+        // await props.setProductArray(() => []);
       }
-      // props.setLoading(false);
+      setFilterOffset(prevState => 0)
+      props.setLoading(false);
       console.log(props.attribute);
       console.log("filterProduct not empty");
       // await props.setProductMap([])
@@ -103,14 +105,6 @@ const Blueprint = (props) => {
     console.log("useDidMountEffect");
   }, [filterProduct, check]);
 
-  useEffect(() => {
-    console.log(Object.values(props.checkedArray));
-    for (let key in props.checkedArray) {
-      console.log(props.checkedArray[key]);
-      setFilterProduct((prevState) => prevState.add(props.checkedArray[key]));
-    }
-  }, []);
-
   useDidMountEffect(() => {
     let attributeArray = Array.from(filterProduct);
     var filterUrl =
@@ -125,9 +119,13 @@ const Blueprint = (props) => {
       .then(async (response) => {
         console.log("After fetching data fetched data", response.data);
         console.log("After fetching data productArray", props.productArray);
-        console.log(response.data[response.data.length - 1].id);
-        props.setProductArray(() => response.data);
+        if (response.data.length !== 0) {
+          console.log(response.data[response.data.length - 1].id);
+          setFilterOffset(prevState => response.data[response.data.length - 1].id)
+          props.setProductMap((prevState) => [...prevState, ...response.data]);
+        }
       });
+    console.log("bluerprint filter");
   }, [props.filterState]);
   return (
     <>

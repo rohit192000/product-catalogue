@@ -7,10 +7,12 @@ const AttributeFilter = async (
   filterOffset,
   callback
 ) => {
+  console.log(attributeArray)
   var filterUrl =
     attribute === "category"
       ? "/products/category/filter/"
       : "/variants/color/filter/";
+      console.log(attribute)
 
   axios
     .post("http://localhost:3001" + filterUrl + filterOffset, {

@@ -27,6 +27,7 @@ const ColorFilter = (props) => {
         productMap={props.productMap}
         checkedArray={props.checkedArray}
         setCheckedArray={props.setCheckedArray}
+        filterState={props.filterState}
       />
     </>
   );
