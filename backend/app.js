@@ -15,7 +15,7 @@ const corsOption = {
 }
 const productsRouter = require('./routes/products');
 const variantsRouter = require('./routes/variants');
-
+const filterRouter = require('./routes/filter')
 const app = express();
 
 // view engine setup
@@ -32,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // app.use(mysql);
 // app.use(dotenv);
 
+app.use('/filter', filterRouter);
 app.use('/products', productsRouter);
 app.use('/variants', variantsRouter);
 
