@@ -15,9 +15,7 @@ const ColorFilter = (props) => {
        */}
       <Blueprint
         product={color}
-        setAttribute={setColor}
         attribute={"color"}
-        productArray={props.productArray}
         setProductArray={props.setProductArray}
         setLoading={props.setLoading}
         offset={props.offset}
@@ -25,9 +23,9 @@ const ColorFilter = (props) => {
         setProductMap={props.setProductMap}
         loading={props.loading}
         productMap={props.productMap}
-        checkedArray={props.checkedArray}
-        setCheckedArray={props.setCheckedArray}
         filterState={props.filterState}
+        filter={props.filter}
+        setFilter={props.setFilter}
       />
     </>
   );

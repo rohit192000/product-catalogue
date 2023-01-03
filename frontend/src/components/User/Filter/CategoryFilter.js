@@ -14,19 +14,17 @@ const CategoryFilter = (props) => {
        */}
       <Blueprint
         product={category}
-        setAttribute={setCategory}
         attribute={"category"}
-        productArray={props.productArray}
         setProductArray={props.setProductArray}
         setLoading={props.setLoading}
         offset={props.offset}
         setOffset={props.setOffset}
         setProductMap={props.setProductMap}
         loading={props.loading}
-        checkedArray={props.checkedArray}
-        setCheckedArray={props.setCheckedArray}
         productMap={props.productMap}
         filterState={props.filterState}
+        filter={props.filter}
+        setFilter={props.setFilter}
       />
     </>
   );

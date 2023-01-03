@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Checkbox,
   FormGroup,
@@ -8,32 +8,44 @@ import {
   AccordionSummary,
   Typography,
 } from "@mui/material";
-
 import { ExpandMore } from "@mui/icons-material";
 import useDidMountEffect from "../CustomHooks/useDidMountEffect";
-import { AttributeFilter } from "./FilterFunctions/FilterAxiosFunction.js";
-import axios from "axios";
 const Blueprint = (props) => {
+  // It will re-render the function when de-select the filter.
   const [check, setCheck] = useState(true);
+  // It will save the checked filter options.
   const [filterProduct, setFilterProduct] = useState(new Set());
+
+  // It saves the attribute name. Is it color or category?
   const attribute = props.attribute;
-  const [filterOffset, setFilterOffset] = useState(0);
+
+  // This function will get the filter option and value it is selected or not and adds in the
+  //  filterProduct set and remove from the filter product set on deselect.
   const filterByAttribute = async (e, attribute) => {
-    console.log(" ");
-    console.log("filterByAttribute is running...");
+    // console.log(" ");
     if (e) {
-      setFilterOffset(() => 0);
+      props.offset.current = 0;
       props.setProductArray(() => []);
       setFilterProduct((prevState) => new Set(prevState).add(attribute));
-      // props.setCheckedArray((prevState) => new Set(prevState).add(attribute));
     } else {
       filterProduct.delete(attribute);
-      props.checkedArray.splice(props.checkedArray.indexOf(attribute), 1);
+      if (props.attribute === "category") {
+        props.filter.categoryFilter.splice(
+          props.filter.categoryFilter.indexOf(attribute),
+          1
+        );
+        // props.setFilter((prevState) => ({...prevState, categoryFilter : props.filter}))
+      } else if (props.attribute === "color") {
+        props.filter.colorFilter.splice(
+          props.filter.colorFilter.indexOf(attribute),
+          1
+        );
+      }
       // this will filter the productMap with the attribute
       // and save in another variable
       // then set productMap with that variable
       // So when user deselect the checkbox then that filtered product will
-      //  remove
+      //  remove and updates the state which is responsible for displaying the images.
       let products =
         props.attribute === "category"
           ? props.productMap.filter((product) => product.category !== attribute)
@@ -43,90 +55,38 @@ const Blueprint = (props) => {
             );
       props.setProductMap(products);
 
-      console.log(check);
       // This will always run the
-      // useDidMountEffect when it changes
-      if (filterProduct.size === 0) {
+      // useDidMountEffect which fetch the first filtered products when it changes
+      if(filterProduct.size === 0){
+        props.offset.current = 0
+      }
         if (check) {
           setCheck(false);
         } else {
           setCheck(true);
         }
-      }
     }
   };
 
   // This is an custom hook which doesn't run on initial render
   useDidMountEffect(async () => {
     let attributeArray = Array.from(filterProduct);
-    props.setCheckedArray((prevState) => Array.from(filterProduct));
-    console.log("useDidMountEffect in blueprint.js");
-    console.log(filterProduct.size);
     if (filterProduct.size !== 0) {
-      if (filterProduct.size === 1) {
-        console.log("empty the products array");
-        // await props.setProductArray(() => []);
-      }
-      setFilterOffset(prevState => 0)
       props.setLoading(false);
-      console.log(props.attribute);
-      console.log("filterProduct not empty");
-      // await props.setProductMap([])
-      // filter products according to category
-      if (attribute === "category") {
-        AttributeFilter(
-          attribute,
-          attributeArray,
-          setFilterOffset,
-          filterOffset,
-          props.setProductArray
-        );
-      }
-      // filter products according to color
-      else if (attribute === "color") {
-        AttributeFilter(
-          attribute,
-          attributeArray,
-          setFilterOffset,
-          filterOffset,
-          props.setProductArray
-        );
-      }
-    } else {
-      console.log("filter Product Empty");
-      console.log(props.attribute);
-      console.log("Empty the product array");
-      props.setProductArray(() => []);
-      props.setOffset(() => -10);
-
-      // props.setProductArray([]);
-      // props.setLoading(true);
     }
-    console.log("useDidMountEffect");
+    if (attribute === "category") {
+      props.setFilter((prevState) => ({
+        ...prevState,
+        categoryFilter: [...attributeArray],
+      }));
+    } else if (attribute === "color") {
+      props.setFilter((prevState) => ({
+        ...prevState,
+        colorFilter: [...attributeArray],
+      }));
+    }
   }, [filterProduct, check]);
 
-  useDidMountEffect(() => {
-    let attributeArray = Array.from(filterProduct);
-    var filterUrl =
-      attribute === "category"
-        ? "/products/category/filter/"
-        : "/variants/color/filter/";
-
-    axios
-      .post("http://localhost:3001" + filterUrl + filterOffset, {
-        attribute: attributeArray,
-      })
-      .then(async (response) => {
-        console.log("After fetching data fetched data", response.data);
-        console.log("After fetching data productArray", props.productArray);
-        if (response.data.length !== 0) {
-          console.log(response.data[response.data.length - 1].id);
-          setFilterOffset(prevState => response.data[response.data.length - 1].id)
-          props.setProductMap((prevState) => [...prevState, ...response.data]);
-        }
-      });
-    console.log("bluerprint filter");
-  }, [props.filterState]);
   return (
     <>
       <Accordion>
@@ -143,7 +103,7 @@ const Blueprint = (props) => {
                     key={product.category}
                     control={
                       <Checkbox
-                        checked={Object.values(props.checkedArray).includes(
+                        checked={Object.values(props.filter)[1].includes(
                           product.category
                         )}
                       />
@@ -157,7 +117,13 @@ const Blueprint = (props) => {
               : props.product.map((product) => (
                   <FormControlLabel
                     key={product.color}
-                    control={<Checkbox />}
+                    control={
+                      <Checkbox
+                        checked={Object.values(props.filter)[2].includes(
+                          product.color
+                        )}
+                      />
+                    }
                     label={product.color}
                     onChange={(e) =>
                       filterByAttribute(e.target.checked, product.color)

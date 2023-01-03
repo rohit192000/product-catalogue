@@ -1,34 +1,11 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React from "react";
 import { Typography, Box, TextField, FormControl } from "@mui/material";
-import useDidMountEffect from "../CustomHooks/useDidMountEffect";
 const PriceFilter = (props) => {
-  const [value, setValue] = useState({
-    low: "",
-    high: "",
-  });
-
-  // This is an custom hook which doesn't run on initial render
-  useDidMountEffect(() => {
-    if (value.low !== "" || value.high !== "") {
-      props.setProductArray([]);
-      props.setLoading(false);
-      console.log(props.offset)
-      axios
-        .post("http://localhost:3001/variants/price/filter", {
-          price: value,
-        })
-        .then((response) => {
-          console.log("Fetched Data : ", response.data);
-          console.log("value length: ", value.length)
-          props.setProductArray(() => response.data);
-        })
-    } else {
-      console.log(props.offset)
-      props.setLoading(true);
-      props.setOffset(0)
-    }
-  }, [value]);
+  const handleChange = (e) => {
+    props.offset.current = 0;
+    props.setLoading(prevState => false)
+    props.setProductMap(prevState => [])
+  };
   return (
     <>
       <Typography variant="h6">Price</Typography>
@@ -46,26 +23,36 @@ const PriceFilter = (props) => {
             variant="outlined"
             name="low"
             label="low"
-            onChange={(e) =>
-              setValue((prevSTate) => ({
-                ...prevSTate,
-                low: e.target.value,
-              }))
-            }
+            value={props.filter.priceFilter.low}
+            onChange={(e) => {
+              props.setFilter((prevState) => ({
+                ...prevState,
+                priceFilter: {
+                  ...props.filter.priceFilter,
+                  low: e.target.value,
+                },
+              }));
+              handleChange(e);
+            }}
           />
         </FormControl>
         <FormControl sx={{ padding: "10px" }}>
           <TextField
             type="number"
             variant="outlined"
+            value={props.filter.priceFilter.high}
             name="high"
             label="high"
-            onChange={(e) =>
-              setValue((prevSTate) => ({
-                ...prevSTate,
-                high: e.target.value,
-              }))
-            }
+            onChange={(e) => {
+              props.setFilter((prevState) => ({
+                ...prevState,
+                priceFilter: {
+                  ...props.filter.priceFilter,
+                  high: e.target.value,
+                },
+              }));
+              handleChange(e)
+            }}
           />
         </FormControl>
       </Box>

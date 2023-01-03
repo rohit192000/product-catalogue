@@ -15,8 +15,6 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import SearchBar from "../SearchBar";
-// import CategoryFilter from "./CategoryFilter";
-// import ColorFilter from "./ColorFilter";
 const PriceFilter = lazy(() => import("./PriceFilter"));
 const ColorFilter = lazy(() => import("./ColorFilter"));
 const CategoryFilter = lazy(() => import("./CategoryFilter"));
@@ -82,8 +80,8 @@ const ProductFilter = (props) => {
   return (
     <Box sx={{ display: "flex", background: "#DFD3C3" }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open} >
-        <Toolbar style={{background : '#85586F'}} >
+      <AppBar position="fixed" open={open}>
+        <Toolbar style={{ background: "#85586F" }}>
           <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} component="div">
             MVT & Fashion
           </Typography>
@@ -143,6 +141,9 @@ const ProductFilter = (props) => {
                   offset={props.offset}
                   setLoading={props.setLoading}
                   setProductArray={props.setProductArray}
+                  filter={props.filter}
+                  setProductMap={props.setProductMap}
+                  setFilter={props.setFilter}
                   setOffset={props.setOffset}
                 />
               </Suspense>,
@@ -150,30 +151,26 @@ const ProductFilter = (props) => {
                 <CategoryFilter
                   offset={props.offset}
                   setLoading={props.setLoading}
-                  productArray={props.productArray}
                   setProductArray={props.setProductArray}
                   setOffset={props.setOffset}
                   setProductMap={props.setProductMap}
-                  loading={props.loading}
                   productMap={props.productMap}
-                  checkedArray={props.checkedArray}
-                  setCheckedArray={props.setCheckedArray}
                   filterState={props.filterState}
+                  filter={props.filter}
+                  setFilter={props.setFilter}
                 />
               </Suspense>,
               <Suspense>
                 <ColorFilter
                   offset={props.offset}
                   setLoading={props.setLoading}
-                  productArray={props.productArray}
                   setProductArray={props.setProductArray}
                   setOffset={props.setOffset}
-                  loading={props.loading}
-                  productMap={props.productMap}
-                  checkedArray={props.checkedArray}
-                  setCheckedArray={props.setCheckedArray}
                   setProductMap={props.setProductMap}
+                  productMap={props.productMap}
                   filterState={props.filterState}
+                  filter={props.filter}
+                  setFilter={props.setFilter}
                 />
               </Suspense>,
             ].map((text, index) => (

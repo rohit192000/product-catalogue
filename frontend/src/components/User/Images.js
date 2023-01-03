@@ -5,13 +5,13 @@ const Images = (props) => {
   const Images = useRef();
   // const [product, props.setProductMap] = useState([]);
   useDidMountEffect(async () => {
-    console.log(" ");
-    console.log("hook in which productArray data push into productMap");
-    console.log("Image.js ProductArray : ", props.productArray);
-    console.log(props.loading);
+    // console.log(" ");
+    // console.log("hook in which productArray data push into productMap");
+    // console.log("Image.js ProductArray : ", props.productArray);
+    // console.log(props.loading);
     if (props.productArray.length === 0) {
-      console.log("if conditions where productArray is empty");
-      console.log("offset : ", props.offset);
+      // console.log("if conditions where productArray is empty");
+      // console.log("offset : ", props.offset);
       props.setProductMap([]);
     } else {
       await props.setProductMap((prevState) => [
@@ -21,7 +21,7 @@ const Images = (props) => {
     }
   }, [props.productArray]);
   useDidMountEffect(async () => {
-    await console.log("Image.js : ", props.productMap);
+    // await console.log("Image.js : ", props.productMap);
   }, [props.productMap]);
 
   return (
@@ -36,7 +36,7 @@ const Images = (props) => {
             flexFlow: "row wrap",
             boxSizing: "content-box",
             background : '#DFD3C3',
-            margin : "0px"
+            marginTop : "15px"
           }}
           ref={Images}
           gap={18}

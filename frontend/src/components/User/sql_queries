@@ -1,0 +1,2 @@
+SELECT * FROM `variants`, `products`
+WHERE color IN ("Red","Green") AND category IN ("Mens Footwear") AND price < 10
