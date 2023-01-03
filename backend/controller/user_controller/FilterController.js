@@ -2,7 +2,7 @@ const Products = require("../../model/products");
 const Variants = require("../../model/variants");
 
 const FilterController = async (req, res) => {
-  console.log("Price Filter : ", req.body.priceFilter);
+  console.log("Search Filter : ", req.body.searchFilter);
   try {
     if (req.body.page) {
       var p = req.body.page;
@@ -27,20 +27,19 @@ const FilterController = async (req, res) => {
       var high = Number(req.body.priceFilter.high);
       let low = Number(req.body.priceFilter.low);
       console.log(`Price Filter after number ${low} and ${high}`);
-      var ids = await Variants
-        .query(function (qb) {
-          if (low !== 0 && low > high) {
-            console.log("only low value");
-            qb.where("price", ">", low);
-          } else if (low === 0 && high !== 0) {
-            console.log("only high value");
-            qb.where("price", "<", high);
-          } else {
-            console.log("both value");
+      var ids = await Variants.query(function (qb) {
+        if (low !== 0 && low > high) {
+          console.log("only low value");
+          qb.where("price", ">", low);
+        } else if (low === 0 && high !== 0) {
+          console.log("only high value");
+          qb.where("price", "<", high);
+        } else {
+          console.log("both value");
 
-            qb.whereBetween("price", [low, high]);
-          }
-        })
+          qb.whereBetween("price", [low, high]);
+        }
+      })
         .query({
           groupBy: "products_id",
         })
@@ -54,6 +53,12 @@ const FilterController = async (req, res) => {
     if (req.body.categoryFilter && req.body.categoryFilter.length !== 0) {
       products = products.where("category", "IN", req.body.categoryFilter);
     }
+
+    if (req.body.searchFilter && req.body.searchFilter !== "") {
+
+      products = products.where("name", "REGEXP", "^" + req.body.searchFilter);
+    }
+
     var results = await products.query("orderBy", "id", "asc").fetchPage({
       withRelated: [
         {
@@ -82,7 +87,7 @@ const FilterController = async (req, res) => {
         },
       ],
       pageSize: 10,
-      limit : 10,
+      limit: 10,
       page: p,
       offset: req.params.offset,
     });

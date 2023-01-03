@@ -92,6 +92,8 @@ const ProductFilter = (props) => {
             setProductArray={props.setProductArray}
             setLoading={props.setLoading}
             setProductMap={props.setProductMap}
+            filter={props.filter}
+            setFilter={props.setFilter}
           />
           <IconButton
             color="inherit"

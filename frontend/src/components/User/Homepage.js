@@ -26,6 +26,7 @@ const Homepage = () => {
     },
     categoryFilter: [],
     colorFilter: [],
+    searchFilter : ""
   });
 
   const fetchData = () => {
@@ -37,7 +38,7 @@ const Homepage = () => {
         console.log(response.data.data);
         if (response.data.data.length === 0) {
           console.log("response is empty");
-          await setLoading(false);
+          await setLoading((prevState) => false);
           return;
         } else {
           setTimeout(() => {
@@ -45,7 +46,7 @@ const Homepage = () => {
             offset.current =
               response.data.data[response.data.data.length - 1].id;
             console.log("after fetching data Offset value : ", offset.current);
-          }, 500);
+          }, 1000);
           setTimeout(() => {
             setLoading(true);
           }, 2000);
@@ -108,7 +109,7 @@ const Homepage = () => {
           setProductMap={setProductMap}
         />
       </Suspense>
-      {loading ? (
+      {loading && (
         <Typography
           variant="p"
           sx={{ marginLeft: "40%", background: "#DFD3C3" }}
@@ -117,17 +118,6 @@ const Homepage = () => {
         >
           fetching images...
         </Typography>
-      ) : (
-        false && (
-          <Typography
-            variant="p"
-            id="filter"
-            sx={{ marginLeft: "40%", background: "#DFD3C3" }}
-            ref={setLastElement}
-          >
-            fetching filtered images...
-          </Typography>
-        )
       )}
     </>
   );

@@ -8,7 +8,6 @@ import {
   OutlinedInput,
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
-import { getProducts } from "./FetchAll";
 const SearchBar = (props) => {
   const [searchInput, setSearchInput] = useState("");
 
@@ -18,13 +17,13 @@ const SearchBar = (props) => {
   };
 
   const searchProduct = () => {
-    props.setLoading(false);
-    axios
-      .get("http://localhost:3001/products/search/" + searchInput)
-      .then((response) => {
-        console.log(response.data);
-        props.setProductMap(() => response.data);
-      });
+    props.setLoading(false)
+    props.setProductMap(prevState => [])
+    props.offset.current = 0;
+    props.setFilter((prevState) => ({
+      ...prevState,
+      searchFilter: searchInput,
+    }));
   };
   return (
     <>
