@@ -691,10 +691,10 @@ If you want to create your own knex configurations then follow the below steps, 
       │   ├── CategoryFilter.js
       │   ├── ColorFilter.js
       │   ├── PriceFilter.js
-      │   └── ProductFilter.js
+      │   ├── ProductFilter.js
+      |   └── SearchBar.js
       ├── Homepage.js
-      ├── Images.js
-      └── SearchBar.js
+      └── Images.js
   
   ```
 
@@ -736,7 +736,7 @@ If you want to create your own knex configurations then follow the below steps, 
 
 #### Admin Module
 
-- This module is reaponsible for adding the products and its variants in the database.
+- This module is responsible for adding the products and its variants in the database.
 
 - This module consists of **form** for adding products, **modal** for adding variants, **table** for displaying variants to be added and **addImage** components for converting the image file into base64 format.
 
@@ -976,3 +976,111 @@ If you want to create your own knex configurations then follow the below steps, 
   - Admin Module documentation ends here.
 
 #### User Module
+
+-  This module is responsible for displaying the products with their featured_image, first variant price, and color.
+
+- On first render only 10 products will be fetched and on-scroll when user reaches the end of the page, then next 10 products will be fetched and so-on.
+
+- Products will filter on the basis of name, color, category and price.
+
+- Directory Structure :- 
+  ```
+    User
+    ├── CustomHooks
+    │   └── useDidMountEffect.js
+    ├── Filter
+    │   ├── Blueprint.js
+    │   ├── CategoryFilter.js
+    │   ├── ColorFilter.js
+    │   ├── PriceFilter.js
+    │   ├── ProductFilter.js
+    │   └── SearchBar.js
+    ├── Homepage.js
+    └── Images.js
+
+  ```
+
+- This module contains component for different functions which defined below : -
+
+  - **useDidMountEffect**
+
+    - This component responsible for stopping the useEffect rendering on first render.
+
+      ```js
+        import React, { useEffect, useRef } from 'react';
+
+        // This hook will stop blueprint.js from initial render.
+        const useDidMountEffect = (func, deps) => {
+            const didMount = useRef(false);
+
+            useEffect(() => {
+                if (didMount.current) func();
+                else didMount.current = true;
+            }, deps);
+        }
+
+        export default useDidMountEffect;
+      ```
+
+  - **Homepage** 
+
+    - This component is the main components for the `user` module. All other components will be dynamically imported here.
+
+    - This component contains five states `loading` responsible for rendering message `fetching images`, `productArray` responsible for storing the fetched products,
+`lastElement` responsible for storing the `ref` to the last element on page, `productMap` an array responsible for display the image and `filter` responsible for storing the selected filter. This also contains variable `offset` defined using `useRef` hook to store its state.
+
+      ```js
+        const [loading, setLoading] = useState(false);
+        const [productArray, setProductArray] = useState([]);
+        const offset = useRef(0);
+        const [lastElement, setLastElement] = useState(null);
+        const [productMap, setProductMap] = useState([]);
+
+        const [filter, setFilter] = useState({
+          priceFilter: {
+            low: "",
+            high: "",
+          },
+          categoryFilter: [],
+          colorFilter: [],
+          searchFilter : ""
+        });
+
+      ```
+
+    - In below element I have set its `ref` to the state `lastElement` to access this element directly from DOM.
+
+      ```js
+        {loading && (
+          <Typography
+            variant="p"
+            sx={{ marginLeft: "40%", background: "#DFD3C3" }}
+            id="allproduct"
+            ref={setLastElement}
+          >
+            fetching images...
+          </Typography>
+        )}
+      ```
+
+    - This component uses `fetchData` function to fetch the products from the database. This function uses axios `post` request to the url `http://localhost:3001/filter/ + offset`. I've sent offset as a params which will fetch first 10 products according to the offset. This same function will fetch the filtered products.
+
+    - I've send `filter` state to the request as to fetch products according to the filter selected. If not selected it will fetch first 10 products.
+     
+    - After fetching products bit will check if the fetched data is empty or not. If empty it will set the `loading` state `false` and return the function.
+
+    - If data is not empty then it will set the `productArray` state with the response data. And update the offset with last fetched product id, so when on-scrol it will fetch next 10 products. After this it will set the state of loading to true after 2 sec and `Typography` will be render to the front-end.
+
+    - I've used this function in a `useEffect` so that on first render it will fetch the products. And set `filter` state as an dependency array. 
+
+    - On first render it will fetch the first 10 products and change the `productArray` state which is a dependency array for the useEffect in `Images` component. That on every render push the data from`productArray` into state `productMap` which is used to display products using map. I will explain this in Image.js component. 
+
+    - Now on scroll when user reaches the end of the page it will fetch next 10 products from the database.
+
+    - This component uses `IntersectionObserver` to asynchronously observe changes in intersection element (in our case it is the `Typography`) with the top-level document's viewport.
+
+    - 
+
+  - Filter
+
+  - Images
