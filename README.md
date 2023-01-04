@@ -451,6 +451,7 @@ If you want to create your own knex configurations then follow the below steps, 
 
         <details><summary>variantController.js</summary>
         ```js
+        
         const Variants = require("../../model/variants");
         const convertFile = require("./base64_to_image")
 
