@@ -449,8 +449,9 @@ If you want to create your own knex configurations then follow the below steps, 
 
     - **variantController.js** has controller responsible for adding the variants in the database. It uses the result from productController to fetch products_id whose variants has to be stored in the database. It also uses base64_to_image controller.
 
-        <details><summary>variantController.js</summary>
-        ```js
+      <details><summary>variantController.js</summary>
+      
+      ```js
         
         const Variants = require("../../model/variants");
         const convertFile = require("./base64_to_image")
@@ -474,8 +475,8 @@ If you want to create your own knex configurations then follow the below steps, 
               });
           });
         };
-        ```
-        </details>
+      ```
+      </details>
 
     - **base64_to_image.js** controller has controller defined which is responsible for converting the base64 format to image format and save that image in the backend filder public/images using **fs** module. In frontend we can fetch these images by calling url `http://localhost:3001/images/image_name`.
 
