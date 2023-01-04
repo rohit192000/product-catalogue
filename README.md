@@ -29,6 +29,10 @@ $ cd ../backend
 
 Run `npm i ` or `npm install` to install all dependencies.
 
+After this modify database, knex configuration and bookshelf configuration according to requirement.
+
+Open terminal and go to the frontend folder and run `npm start` to run the app in the browser. By default user module will open. To open admin add `/admin` in the url.
+
 
 # Database
 
@@ -663,3 +667,310 @@ If you want to create your own knex configurations then follow the below steps, 
         
         ```
         </details>
+
+# Modules
+
+- This project has two modules **Admin** for adding products and **User** for display of the products and filter products.
+
+- These modules are in the folder having path `frontend/src/components/`. The directory structure of these modules are :-
+
+  ```
+  components
+  ├── Admin
+  │   ├── AddImage.js
+  │   ├── Form.js
+  │   ├── Variant.js
+  │   └── VariantModal.js
+  └── User
+      ├── CustomHooks
+      │   └── useDidMountEffect.js
+      ├── Filter
+      │   ├── Blueprint.js
+      │   ├── CategoryFilter.js
+      │   ├── ColorFilter.js
+      │   ├── PriceFilter.js
+      │   └── ProductFilter.js
+      ├── Homepage.js
+      ├── Images.js
+      └── SearchBar.js
+  
+  ```
+
+
+- I've created route for the `admin` and `user` module in `App.js` file in `src` folder. I've used code splitting for dynamically importing those modules using `lazy` and `Suspense` module from react.
+
+- By code splitting means this will import only those files which user needed at that time. For example, If admin goes to the react app in browser then it will only import admin module not the user module and vice-versa.
+
+- It will help in lowering the server load on first render and render page in less time.
+
+  ```js
+
+    import React, { Suspense, lazy } from "react";
+    import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+    const Homepage = lazy(() => import("./components/User/Homepage"));
+    const Form = lazy(() => import("./components/Admin/Form"));
+    const VariantModal = lazy(() => import("./components/Admin/VariantModal"));
+    const App = () => {
+      console.log(window.location.href);
+      return (
+        <div className="App" style={{ background: "#dfd3c3" }}>
+          <Router>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Routes>
+                <Route path="/admin" element={<Form />} />
+                <Route path="/" element={<Homepage />} />
+                <Route path="/VariantModal" element={<VariantModal />} />
+              </Routes>
+            </Suspense>
+          </Router>
+        </div>
+      );
+    };
+
+    export default App;
+
+  ```
+
+
+#### Admin Module
+
+- This module is reaponsible for adding the products and its variants in the database.
+
+- This module consists of **form** for adding products, **modal** for adding variants, **table** for displaying variants to be added and **addImage** components for converting the image file into base64 format.
+
+- I've defined components below :- 
+
+  - **Form**
+
+    - This component will be responsible for displaying the form and is the main component for the admin module. All other components will be imported in this component.
+    - This component uses three react `hooks`, `useState`, `useEffect` and `useref`.
+
+    - This component contains five states `variants` in which array of variants will be added, `product` in which product data will be added, `file` in which images will be added, `add` and `add1` both are dependencies for different `useEffect`. It is also contains one useRef variable `image` for conrolling image TextField.
+
+      ```js
+
+      const [variants, setVariants] = useState([]);
+      const image = useRef();
+      const [product, setProduct] = useState({
+        name: "",
+        slug: "",
+        featured_image: "",
+        category: "",
+        variants: [],
+      });
+      const [file, setFile] = useState({
+        fileName: "",
+        file: "",
+      });
+      const [add, setAdd] = useState(false);
+      const [add1, setAdd1] = useState(false);
+      ```
+
+    - This component uses Material-UI components `Box`, `TextField`, `Stack` and `Button`.
+
+    - This component contains 3 `TextField` for `Product Name`, `Product Category`, `Image` and `Add Product` button for submitting the final data.
+
+    - `Product Name` TextField has `onChange` event which sets the product name in the `product` state.
+
+      ```js
+        <TextField
+          id="standard-basic"
+          label="Product Name"
+          variant="standard"
+          type="text"
+          name="product_name"
+          value={product.name}
+          onChange={(e) =>
+            setProduct((prevState) => ({
+              ...prevState,
+              name: e.target.value,
+            }))
+          }
+        />
+      ```
+
+    - `Product Category` TextField has `onChange` event which sets the category name in `product` state.
+
+    - `Image` TextField has `onChange` event which calls the function `addFile` which uses code splitting to dynamic import the `AddImage` component and call the `saveFile` function from the imported component which takes the two parameters `event` from the image field and `setFile1` function from the `file` state. This `saveFile` function convers the image file into base64 format. `Image` TextField has also have `inputRef` which has `image` variable set to it  by using this variable I've empty the value if image on successfully added the products.
+
+      ```js
+        const addFile = (e) => {
+          import("./AddImage").then((addImage) => {
+            addImage.saveFile1(e, setFile);
+            console.log(image.current.value);
+          });
+        };
+
+      ``` 
+
+    - This component also contains another component `Variant` which displays the variants to be addded in the `Table` and contains modal for display the form in which variant details will be added and imported from the current working folder. I've  passed the `variant` state as a props.
+
+
+    - `Add Product` button has onClick events which calls the `addProduct` function which changes the state `add` from false to true which in returns call the `useEffect` with dependency `add`. 
+    
+    - This useEffect will check the condition that `add` is true or not. If true then it checks the condition that all fields are filled or not. If not then it will alert the user with message `Please fill all the fields` and change the state `add` to false.
+
+    - If all fields are filled then it set the state `product` with required values and change the state `add` to false and `add1` to true which is also a dependency  of another useEffect.
+
+      ```js
+
+        useEffect(() => {
+          // console.log(add);
+          if (add) {
+            if (product.name !== "" && file !== "" && variants.length !== 0) {
+              setProduct((prevState) => ({
+                ...prevState,
+                slug: product.name
+                  .toLowerCase()
+                  .replace(/ /g, "-")
+                  .replace(/[^\w-]+/g, ""),
+                featured_image: file,
+                variants: variants,
+              }));
+              setAdd((prevState) => false);
+              setAdd1((prevState) => true);
+            } else {
+              setAdd((prevState) => false);
+              alert("Please fill all the fields");
+            }
+          }
+        }, [add]);
+      ```
+
+    - When above `useEffect` will change state `add1` to true it will run another `useEffect`. This useEffect will check if add1 is true or not. If true then it will send the `axios` post request to the url `http://localhost:3001/products/add` with state `product`. This request will call the api from the backend which adds the product.
+
+      ```js
+        router.post("/add", productController);
+      ```
+    
+    - This request will fetch add the products in database. After successfully added the request this will clear all the field and alert to the user that `Product has been added successfully`.
+
+      ```js
+
+        useEffect(() => {
+          if (add1) {
+            // console.log(product);
+            axios
+              .post("http://localhost:3001/products/add", product)
+              .then((response) => {
+                console.log(response.data);
+              });
+            setAdd1((prevState) => false);
+            alert("Product has been added successfully");
+            setProduct((prevState) => ({
+              ...prevState,
+              name: "",
+              slug: "",
+              featured_image: "",
+              category: "",
+              variants: [],
+            }));
+            setVariants((prevState) => []);
+            image.current.value = ""
+          }
+        }, [add1]);
+      ```
+
+  - **AddImage**
+
+    - This component will responsible for converting the image file into base64 format to be send to backend. This component contains two functions `saveFile1` and `getBase64`.
+
+    - `getBase64` will take `image` file as input. For example : `getBase64(e.target.files[0])` where e takes the data from input field having type file. After that it uses return `Promise` which uses `FileReader` to convert file into base64 format and on resolve give fileInfo object which contains base64 format and data for that file.
+
+      ```js
+
+        const getBase64 = (file) => {
+          return new Promise((resolve) => {
+            let baseUrl = "";
+
+            let reader = new FileReader();
+
+            // Convert the file to base64 text
+            reader.readAsDataURL(file);
+            // on reader load something..
+            reader.onload = () => {
+              // console.log("Called", reader);
+              // Make a fileInfo object
+              baseUrl = reader.result;
+              // console.log(baseUrl);
+              resolve(baseUrl);
+            };
+          });
+        };
+
+      ```
+
+    - `saveFile1` function takes two input `e` as event from the input field of type `file` and `callback` function. `callback` function is a `setState` function whose state has value of type file. In this project that is a `file` state in `Form.js`.
+    
+    - It calls the `getBase64` function and after resolve it sets the fileInfo which it gets from the `getBase64` function to the `state` using callback function.
+
+      ```js
+
+        const saveFile1 = (e, callback) => {
+          // setFileName(e.target.files[0].name);
+          let file1;
+          file1 = e.target.files[0];
+          getBase64(file1)
+            .then((result) => {
+              file1["base64"] = result;
+              // console.log("file is", file1);
+              callback((prevState) => ({
+                ...prevState,
+                fileName: file1.name,
+                file: file1,
+              }));
+            })
+            .catch((err) => {
+              // console.log(err);
+            });
+        };
+
+      ```
+
+  - **Variant**
+  
+    - This component renders the `Table` of variants details using Material-Ui `Table` component in the `Form.js` component. This component has one state `open` which uses controls the rendering of modal.
+
+      ```js
+
+        const [open, setOpen] = useState(false)
+      ```
+
+    - This table contains `Add Variant` button which has `onClick` event. On click this will change the state `open` from false to true.
+
+    - It uses conditional rendering to render `VariantModal` component and passes props for set the `variants` data.
+
+      ```js
+
+        {open && (
+          <Suspense fallback={<div>Modal...</div>}>
+            <VariantModal
+              variants={props.variants}
+              setVariants={props.setVariants}
+              setOpen={setOpen}
+              open={open}
+            />
+          </Suspense>
+        )}      
+      ```
+
+    - On click the button `open` will become true and then `VariantModal` will be dynamically imported and displays the modal. Modal contains the form for adding the variants and on submitting the form it will set the `variant` state with the `formdata`.
+
+    - Table is using `variant` state to display variants data. Every time form in modal will submitted, it updates the `variant` state and data in table will be updated.
+
+  - **VariantModal**
+
+    - This component contains the modal for variant detail form which opens when user click the `Add Variant` button on table. 
+
+    - This form contains TextField for `color`, `size`, `Amount`, `description`, `image`, and Button for `submitting the form.
+
+    - `image` field works same as the image field in `Form.js` component.
+
+    - This form has event `onSubmit` which calls `addVariant` function on submitting the form.
+
+    - `addVariant` function takes event from form as input and set the `variant` state with `formdata` which updates the data in table.
+
+
+  - Admin Module documentation ends here.
+
+#### User Module
