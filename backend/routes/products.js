@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const productController = require("../controller/productController");
+const productController = require("../controller/admin_controller/productController");
 
 const {
   FetchCategory,

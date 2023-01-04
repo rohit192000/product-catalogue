@@ -1,4 +1,4 @@
-const Variants = require("../model/variants");
+const Variants = require("../../model/variants");
 const convertFile = require("./base64_to_image")
 
 module.exports = (product, variants) => {

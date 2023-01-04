@@ -1,5 +1,5 @@
-const Products = require("../model/products");
-const convertFile = require("../controller/base64_to_image");
+const Products = require("../../model/products");
+const convertFile = require("./base64_to_image");
 const variantController = require("./variantController");
 
 module.exports = async (req, res) => {
