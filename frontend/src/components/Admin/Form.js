@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Box, TextField, Button, Stack, imageListClasses } from "@mui/material";
+import { Box, TextField, Button, Stack} from "@mui/material";
 import Variant from "./Variant";
 const Form = (props) => {
   const [variants, setVariants] = useState([]);
