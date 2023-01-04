@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Box, TextField, Button, Stack } from "@mui/material";
+import { Box, TextField, Button, Stack, imageListClasses } from "@mui/material";
 import Variant from "./Variant";
 const Form = (props) => {
   const [variants, setVariants] = useState([]);
+  const image = useRef();
   const [product, setProduct] = useState({
     name: "",
     slug: "",
@@ -12,16 +12,17 @@ const Form = (props) => {
     category: "",
     variants: [],
   });
-  const navi = useNavigate();
   const [file, setFile] = useState({
     fileName: "",
     file: "",
   });
 
   const addFile = (e) => {
-    import('./AddImage').then(addImage => {
+    import("./AddImage").then((addImage) => {
       addImage.saveFile1(e, setFile);
-    })
+      console.log(image.current.value);
+    });
+    // setFileInputRef(prevState => "")
   };
 
   const [add, setAdd] = useState(false);
@@ -35,22 +36,21 @@ const Form = (props) => {
   useEffect(() => {
     // console.log(add);
     if (add) {
-      if(product.name !== "" && file !== "" && variants.length !== 0){
-
+      if (product.name !== "" && file !== "" && variants.length !== 0) {
         setProduct((prevState) => ({
           ...prevState,
           slug: product.name
-          .toLowerCase()
-          .replace(/ /g, "-")
-          .replace(/[^\w-]+/g, ""),
+            .toLowerCase()
+            .replace(/ /g, "-")
+            .replace(/[^\w-]+/g, ""),
           featured_image: file,
           variants: variants,
         }));
         setAdd((prevState) => false);
         setAdd1((prevState) => true);
-      }else{
-        setAdd(prevState => false)
-        alert('Please fill all the fields')
+      } else {
+        setAdd((prevState) => false);
+        alert("Please fill all the fields");
       }
     }
   }, [add]);
@@ -64,8 +64,17 @@ const Form = (props) => {
           console.log(response.data);
         });
       setAdd1((prevState) => false);
-      alert("Product has been added successfully")
-      navi('/admin')
+      alert("Product has been added successfully");
+      setProduct((prevState) => ({
+        ...prevState,
+        name: "",
+        slug: "",
+        featured_image: "",
+        category: "",
+        variants: [],
+      }));
+      setVariants((prevState) => []);
+      image.current.value = ""
     }
   }, [add1]);
 
@@ -93,6 +102,7 @@ const Form = (props) => {
             variant="standard"
             type="text"
             name="product_name"
+            value={product.name}
             onChange={(e) =>
               setProduct((prevState) => ({
                 ...prevState,
@@ -104,6 +114,7 @@ const Form = (props) => {
             id="standard-basic"
             label="Product Category"
             variant="standard"
+            value={product.category}
             type="text"
             name="product_category"
             onChange={(e) =>
@@ -117,6 +128,10 @@ const Form = (props) => {
             id="standard-basic"
             variant="outlined"
             type="file"
+            inputRef={image}
+            // ref={(ref) => {
+            //   setFileInputRef(ref);
+            // }}
             sx={{ bgcolor: "ButtonHighlight" }}
             onChange={addFile}
           />
