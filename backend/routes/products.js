@@ -5,10 +5,6 @@ const productController = require("../controller/admin_controller/productControl
 const {
   FetchCategory,
 } = require("../controller/user_controller/FetchCategoryController");
-const {
-  FetchProduct,
-} = require("../controller/user_controller/FetchProductController");
-router.get("/limit/:limit", FetchProduct);
 
 router.post("/add", productController);
 
