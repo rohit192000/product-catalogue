@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { Suspense, useState } from "react";
 import {
   Button,
   Paper,

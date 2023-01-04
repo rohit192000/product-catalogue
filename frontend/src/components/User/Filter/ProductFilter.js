@@ -14,7 +14,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-import SearchBar from "../SearchBar";
+import SearchBar from "./SearchBar";
 const PriceFilter = lazy(() => import("./PriceFilter"));
 const ColorFilter = lazy(() => import("./ColorFilter"));
 const CategoryFilter = lazy(() => import("./CategoryFilter"));
