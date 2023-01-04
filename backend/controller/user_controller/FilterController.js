@@ -12,6 +12,7 @@ const FilterController = async (req, res) => {
 
     var products = await Products;
 
+    // if the color filter is selcted
     if (req.body.colorFilter && req.body.colorFilter.length !== 0) {
       var ids = await Variants.where(
         "color",
@@ -23,6 +24,7 @@ const FilterController = async (req, res) => {
       products = products.where("id", "IN", ids);
     }
 
+    // if the price filter is selcted
     if (req.body.priceFilter.low !== "" || req.body.priceFilter.high !== "") {
       var high = Number(req.body.priceFilter.high);
       let low = Number(req.body.priceFilter.low);
@@ -50,15 +52,17 @@ const FilterController = async (req, res) => {
       products = products.where("id", "IN", ids);
     }
 
+    // if the category filter is selected
     if (req.body.categoryFilter && req.body.categoryFilter.length !== 0) {
       products = products.where("category", "IN", req.body.categoryFilter);
     }
 
+    // if the search filter is selected
     if (req.body.searchFilter && req.body.searchFilter !== "") {
-
       products = products.where("name", "REGEXP", "^" + req.body.searchFilter);
     }
 
+    // It will fetch the last result even one filter is seleted or multiple.
     var results = await products.query("orderBy", "id", "asc").fetchPage({
       withRelated: [
         {

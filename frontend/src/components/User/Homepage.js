@@ -41,12 +41,12 @@ const Homepage = () => {
           await setLoading((prevState) => false);
           return;
         } else {
-          setTimeout(() => {
+          // setTimeout(() => {
             setProductArray((prevState) => response.data.data);
             offset.current =
               response.data.data[response.data.data.length - 1].id;
             console.log("after fetching data Offset value : ", offset.current);
-          }, 1000);
+          // }, 1000);
           setTimeout(() => {
             setLoading(true);
           }, 2000);
