@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom'
 import axios from "axios";
 import { Box, TextField, Button, Stack } from "@mui/material";
 import Variant from "./Variant";
 const Form = (props) => {
   const [variants, setVariants] = useState([]);
-
   const [product, setProduct] = useState({
     name: "",
     slug: "",
@@ -12,7 +12,7 @@ const Form = (props) => {
     category: "",
     variants: [],
   });
-
+  const navi = useNavigate();
   const [file, setFile] = useState({
     fileName: "",
     file: "",
@@ -35,17 +35,23 @@ const Form = (props) => {
   useEffect(() => {
     // console.log(add);
     if (add) {
-      setProduct((prevState) => ({
-        ...prevState,
-        slug: product.name
+      if(product.name !== "" && file !== "" && variants.length !== 0){
+
+        setProduct((prevState) => ({
+          ...prevState,
+          slug: product.name
           .toLowerCase()
           .replace(/ /g, "-")
           .replace(/[^\w-]+/g, ""),
-        featured_image: file,
-        variants: variants,
-      }));
-      setAdd((prevState) => false);
-      setAdd1((prevState) => true);
+          featured_image: file,
+          variants: variants,
+        }));
+        setAdd((prevState) => false);
+        setAdd1((prevState) => true);
+      }else{
+        setAdd(prevState => false)
+        alert('Please fill all the fields')
+      }
     }
   }, [add]);
 
@@ -58,6 +64,8 @@ const Form = (props) => {
           console.log(response.data);
         });
       setAdd1((prevState) => false);
+      alert("Product has been added successfully")
+      navi('/admin')
     }
   }, [add1]);
 
