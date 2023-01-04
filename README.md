@@ -345,7 +345,7 @@ If you want to create your own knex configurations then follow the below steps, 
 ### Routes :
 - I've used **express Router** to define routes. To use these routes I've called them in **app.js** file.
 
-    ```js
+  ```js
     const productsRouter = require('./routes/products');
     const variantsRouter = require('./routes/variants');
     const filterRouter = require('./routes/filter')
@@ -353,13 +353,13 @@ If you want to create your own knex configurations then follow the below steps, 
     app.use('/filter', filterRouter);
     app.use('/products', productsRouter);
     app.use('/variants', variantsRouter);
-    ```
+  ```
 
 - This project uses three routes which are defined below.
 
-    <details><summary>products.js</summary>
+  <details><summary>products.js</summary>
 
-    ```js
+  ```js
     const express = require("express");
     const router = express.Router();
     const productController = require("../controller/admin_controller/productController");
@@ -373,12 +373,12 @@ If you want to create your own knex configurations then follow the below steps, 
     router.get("/categories", FetchCategory);
 
     module.exports = router;
-    ```
-    </details>
+  ```
+  </details>
 
-    <details><summary>variants.js</summary>
+  <details><summary>variants.js</summary>
 
-    ```js
+  ```js
     const express = require("express");
     const router = express.Router();
     const {
@@ -388,12 +388,12 @@ If you want to create your own knex configurations then follow the below steps, 
     router.get("/color", FetchColor);
 
     module.exports = router;
-    ```
-    </details>
+  ```
+  </details>
 
-    <details><summary>filter.js</summary>
+  <details><summary>filter.js</summary>
 
-    ```js
+  ```js
     const express = require("express");
     const router = express.Router();
     const FilterController = require("../controller/user_controller/FilterController")
@@ -401,8 +401,8 @@ If you want to create your own knex configurations then follow the below steps, 
     router.post('/:offset', FilterController);
 
     module.exports = router;
-    ```
-    </details>
+  ```
+  </details>
 
 ### Controllers :
 
