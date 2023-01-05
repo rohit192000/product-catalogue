@@ -1066,21 +1066,658 @@ If you want to create your own knex configurations then follow the below steps, 
     - This component uses `fetchData` function to fetch the products from the database. This function uses axios `post` request to the url `http://localhost:3001/filter/ + offset`. I've sent offset as a params which will fetch first 10 products according to the offset. This same function will fetch the filtered products.
 
     - I've send `filter` state to the request as to fetch products according to the filter selected. If not selected it will fetch first 10 products.
-     
-    - After fetching products bit will check if the fetched data is empty or not. If empty it will set the `loading` state `false` and return the function.
+
+      ```js
+        const fetchData = () => {
+          console.log("filter request", offset.current);
+          axios
+            .post("http://localhost:3001/filter/" + offset.current, filter)
+            .then(async (response) => {
+              console.log(filter);
+              console.log(response.data.data);
+              if (response.data.data.length === 0) {
+                console.log("response is empty");
+                await setLoading((prevState) => false);
+                return;
+              } else {
+                // setTimeout(() => {
+                  setProductArray((prevState) => response.data.data);
+                  offset.current =
+                    response.data.data[response.data.data.length - 1].id;
+                  console.log("after fetching data Offset value : ", offset.current);
+                // }, 1000);
+                setTimeout(() => {
+                  setLoading(true);
+                }, 2000);
+              }
+            });
+        };
+      ```
+
+    - In backend I've made the controller which is responsible for fetching the products even if its filtered or not if request send to this route. That is `FilterController.js`. 
+
+    - In that controller I've created many conditions according to the `filter` state data. If filter selected then it will fetch filtered products and if not then all products.
+
+    - I've assign the `Products` model to the `products` variable. Now what it do is that on every condition which becomes true it assign the updated model in this variable.
+I've explained all conditions in a respected filter components which uses these conditions. 
+
+    - So now what happens is that if I selected multiple filters like for category and color then it will fetch product according to both filters. If not slected any filter then it will fetch all products.
+
+    - For getting the final resulted model I've created a variable named `results` and assugned a result from the simple fetch query on `Products` model with related variants. It will fetch the products from updated model. And sends response to the frontend.
+
+    - I've made the resulted variable `results` which takes the last updated model and fetched all the data in that updated model with related table `Variants` with limits and offset. This `results` variable will be used for every filters and all products.
+
+      ```js
+        // It will fetch the last result even one filter is seleted or multiple or not any.
+        var results = await products.query("orderBy", "id", "asc").fetchPage({
+          withRelated: [
+            {
+              variants: (qb) => {
+                if (req.body.colorFilter && req.body.colorFilter.length !== 0) {
+                  console.log("ColorFIlter is there");
+                  qb.where("color", "IN", req.body.colorFilter);
+                } else {
+                  console.log("color filter empty");
+                  if (
+                    req.body.priceFilter.low === 0 &&
+                    req.body.priceFilter.high === 0
+                  ) {
+                    qb.column(
+                      "id",
+                      "products_id",
+                      "description",
+                      "image",
+                      "size",
+                      "color",
+                      "price"
+                    );
+                  }
+                }
+              },
+            },
+          ],
+          pageSize: 10,
+          limit: 10,
+          page: p,
+          offset: req.params.offset,
+        });
+        results = results.toJSON();
+
+        res.status(200).send({
+          message: "Filtered Products",
+          data: results,
+        });
+      ```
+          -      
+    - After fetching products it will check if the fetched data is empty or not. If empty it will set the `loading` state `false` and return the function.
 
     - If data is not empty then it will set the `productArray` state with the response data. And update the offset with last fetched product id, so when on-scrol it will fetch next 10 products. After this it will set the state of loading to true after 2 sec and `Typography` will be render to the front-end.
 
     - I've used this function in a `useEffect` so that on first render it will fetch the products. And set `filter` state as an dependency array. 
 
-    - On first render it will fetch the first 10 products and change the `productArray` state which is a dependency array for the useEffect in `Images` component. That on every render push the data from`productArray` into state `productMap` which is used to display products using map. I will explain this in Image.js component. 
+    - On first render it will fetch the first 10 products and change the `productArray` state which is a dependency array for the useEffect in `Images` component. That on every render push the data from`productArray` into state `productMap` which is used to display products using map. I will explain this in Images.js component. 
 
-    - Now on scroll when user reaches the end of the page it will fetch next 10 products from the database.
+    - After fetching data it will update the `offset` with the last fetched product id, so if again I want to fetch the produvt with same query then it will fetch next products on scroll.
 
-    - This component uses `IntersectionObserver` to asynchronously observe changes in intersection element (in our case it is the `Typography`) with the top-level document's viewport.
+    - Now on scroll when user reaches the end of the page it will fetch next 10 products from the database. For this functionality I've used `IntersectionObserver`. Now `fetchData` function is also used for fetching the filtered products.
 
-    - 
+    - `IntersectionObserver` asynchronously observe changes in intersection element (in our case it is the `Typography`) with the top-level document's viewport. To use `IntersectionObserver` we have to make a `observer` which observes when `target` element intersect the viewport and on intersection what it will do. We can also define that on how much percentage of the `target` element occurs on viewport then the expected function will work.
 
-  - Filter
+      ```js
 
-  - Images
+        const observer = new IntersectionObserver(
+          useCallback(
+            (entries) => {
+              const first = entries[0];
+              console.log(filter);
+              if (first.isIntersecting) {
+                console.log("observer");
+                fetchData();
+              }
+            },
+            [filter]
+          )
+        );
+      ```
+
+      - I've used `useCallback` to retain the current value of filter as in `observer` fiter value will always be the initial value every time observer will observe. Here it is taking a `entries` as a parameter where entries are the elements. Here I've saved in a variable and use `isIntersecting` to check if lastElement is intersecting or not. If intersecting it will again run the `fetchData` function and fetch products with updated offset.
+
+    - Now how will `observer` observe the last element. For this we have to use observe property of observer. I've used it in a `useDidMountEffect` CustomHook which don't run on initial render.
+
+      ```js
+
+        useDidMountEffect(() => {
+          const currentElement = lastElement;
+
+          const currentObserver = observer;
+
+          if (currentElement) {
+            currentObserver.observe(currentElement);
+          }
+          return () => {
+            if (currentElement) {
+              currentObserver.unobserve(currentElement);
+            }
+          };
+        }, [lastElement]);
+
+      ```
+
+      - Here I've saved lastElement state and observer in a variable so if any time I've updated the lastElement it will not effect the cleanup I've used in this useEffect to `unobserve` the target element. I've used `lastElement` as a dependency array so every time it will come into viewport it will call the useEffect which will observe this element. And observer will fetch next products.
+
+      - This component calls another components `ProductFilter` responsible for filters and `Images` responsible for displaying the products and pass props to them.
+
+        ```js
+          <ProductFilter
+            productMap={productMap}
+            offset={offset}
+            setLoading={setLoading}
+            setProductArray={setProductArray}
+            setProductMap={setProductMap}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <Suspense>
+            <Images
+              loading={loading}
+              productArray={productArray}
+              setLastElement={setLastElement}
+              offset={offset}
+              productMap={productMap}
+              setProductMap={setProductMap}
+            />
+          </Suspense>        
+        ```
+
+  - **Images**
+
+    - So after fetching data we have to display that data, this component is responsible for displaying the products.
+
+    - This component uses different props pass into them to display the products. This component has `useDidMountEffect` which has dependency array `props.productArray` state which stores fetched data. On every state change this `useDidMountEffect` will run and push `props.productArray` data into `props.productMap` which is used to show the products using `map`. And also there is a condition that when any component empties the `props.productArray` for fetching the new filtered products, `props.productMap` also set to empty value and then again pushed with new updated `props.productArray`.
+    
+      ```js
+        useDidMountEffect(async () => {
+          if (props.productArray.length === 0) {
+            props.setProductMap([]);
+          } else {
+            await props.setProductMap((prevState) => [
+              ...prevState,
+              ...props.productArray,
+            ]);
+          }
+        }, [props.productArray]);
+      ```
+
+    - So this single component always shows filtered products and non-filtered products both.
+
+  - **Filter**
+
+    - This is a folder which contains different components for the filter components for filtering the products. These components also uses the same observer and function from `Homepage` component to fetch filtered products and on-scroll fetched next products.
+
+    - These are explained below :- 
+
+      - **ProductFilter**
+
+        - This component used `Material UI` Appbar and Drawer components.
+
+        - In Appbar there is a brand name and `searchbar` which uses `SearchBar` component.
+
+        - In Drawer there is `price` filter with low and high input fields which uses `PriceFilter` component, `category` and `color` filter with accordion which shows different filter values with checkbox with them to select those filter which uses `CategoryFilter` and `ColorFilter` components.
+
+        - I've passed `SearchBar` component with props in Appbar. 
+          ```js
+
+            <SearchBar
+              sx={{ flexGrow: 2 }}
+              offset={props.offset}
+              setOffset={props.setOffset}
+              setProductArray={props.setProductArray}
+              setLoading={props.setLoading}
+              setProductMap={props.setProductMap}
+              filter={props.filter}
+              setFilter={props.setFilter}
+            />
+          ```
+
+          - I've passed `PriceFilter` , `CategoryFilter` and `ColorFIlter` as an array vaues to the ListItem to show in sidebar as a list. I've also used dynamic imports for them. They are not going to import till the user open the sidebar. They are render using conditional rendering. 
+
+            ```js
+              <List>
+                {open &&
+                  [
+                    <Suspense>
+                      <PriceFilter
+                        setProducts={props.setProducts}
+                        offset={props.offset}
+                        setLoading={props.setLoading}
+                        setProductArray={props.setProductArray}
+                        filter={props.filter}
+                        setProductMap={props.setProductMap}
+                        setFilter={props.setFilter}
+                        setOffset={props.setOffset}
+                      />
+                    </Suspense>,
+                    <Suspense>
+                      <CategoryFilter
+                        offset={props.offset}
+                        setLoading={props.setLoading}
+                        setProductArray={props.setProductArray}
+                        setOffset={props.setOffset}
+                        setProductMap={props.setProductMap}
+                        productMap={props.productMap}
+                        filterState={props.filterState}
+                        filter={props.filter}
+                        setFilter={props.setFilter}
+                      />
+                    </Suspense>,
+                    <Suspense>
+                      <ColorFilter
+                        offset={props.offset}
+                        setLoading={props.setLoading}
+                        setProductArray={props.setProductArray}
+                        setOffset={props.setOffset}
+                        setProductMap={props.setProductMap}
+                        productMap={props.productMap}
+                        filterState={props.filterState}
+                        filter={props.filter}
+                        setFilter={props.setFilter}
+                      />
+                    </Suspense>,
+                  ].map((text, index) => (
+                    <ListItem key={index} disablePadding sx={{ padding: "7px" }}>
+                      <ListItemText primary={text} />
+                    </ListItem>
+                  ))}
+              </List>
+            ```
+
+      - **SearchBar**
+      
+        - This component uses `OutinedInput` for showing searchbar which has `onChange` event associated with it which calls the `handleChange` function and uses `IconButton` for showing search button in searchbar which has `onClick` event which calls the `searchProduct` function.
+
+          ```js
+            <OutlinedInput
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="search_button"
+                    edge="end"
+                    onClick={searchProduct}
+                  >
+                    <Search />
+                  </IconButton>
+                </InputAdornment>
+              }
+              label="searchInput"
+              onChange={(e) => handleChange(e)}
+            />
+          ```
+
+        - `handleChange` function will get the value from search input and set it to the state `searchInput`.
+
+          ```js
+            const [searchInput, setSearchInput] = useState("");
+
+            const handleChange = (e) => {
+              e.preventDefault();
+              setSearchInput(e.target.value);
+            };
+
+          ```
+
+        - `searchProduct` function will set `loading` to false, set empty array to the `props.productMap` so that new products will be shown, set `props.offset.current` to 0 as to fetch products from the start and then set `props.filter` with `searchInput` which changes the `props.filter` and useEffect in `Homepage` with `filter` as a dependency array will trigger and fetch the products and shown to the user. On-scroll will work as defined as it now fetched the last query products with updated offset.
+
+          ```js
+            const searchProduct = () => {
+              props.setLoading(false)
+              props.setProductMap(prevState => [])
+              props.offset.current = 0;
+              props.setFilter((prevState) => ({
+                ...prevState,
+                searchFilter: searchInput,
+              }));
+            };
+
+          ```
+        - Now `fetchData` will request url  `"http://localhost:3001/filter/" + offset.current` with updated filter and it will goes to backend and fetch the products.
+        
+        - In  the backend only one route is responsible for different filters as I've defined conditions to run query.
+
+        - The controller which is responsible for filter is `FilterController.js` with path `backend/controller/user_controller/`. 
+
+          ```js
+            if (req.body.searchFilter && req.body.searchFilter !== "") {
+              products = products.where("name", "REGEXP", "^" + req.body.searchFilter);
+            }
+          ```
+
+          - This condition checks if the key `searchFilter` in a `filter` state which we have send with the request url is empty or not. If not then it will run query to fetch the filtered products. Here I've previously assign the `Product` model in a `products` variable. And in this condition I've
+again asign the `products` variable with filtered model.
+
+          - As I've explained above in the `Homepage` component that updated model will again run with a query and saved the result in a `results` variable and send response to the user.
+
+      - **PriceFilter**
+
+        - This component uses two TextField for `low` and `high` price and have associated `onChange` event on both of them which calls the `handleChange` function. 
+
+        - `handleChange` function will set `loading` to false, set empty array to the `props.productMap` so that new products will be shown, set `props.offset.current` to 0 as to fetch products from the start and then set `props.filter` key `priceFilter ` with `low` and `high` value which changes the `props.filter` and useEffect in `Homepage` with `filter` as a dependency array will trigger and fetch the products and shown to the user. On-scroll will work as defined as it now fetched the last query products with updated offset.
+
+          ```js
+            <TextField
+              type="number"
+              variant="outlined"
+              name="low"
+              label="low"
+              value={props.filter.priceFilter.low}
+              onChange={(e) => {
+                props.setFilter((prevState) => ({
+                  ...prevState,
+                  priceFilter: {
+                    ...props.filter.priceFilter,
+                    low: e.target.value,
+                  },
+                }));
+                handleChange(e);
+              }}
+            />
+
+            <TextField
+              type="number"
+              variant="outlined"
+              value={props.filter.priceFilter.high}
+              name="high"
+              label="high"
+              onChange={(e) => {
+                props.setFilter((prevState) => ({
+                  ...prevState,
+                  priceFilter: {
+                    ...props.filter.priceFilter,
+                    high: e.target.value,
+                  },
+                }));
+                handleChange(e)
+              }}
+            />
+          ```
+        - Same controller will fetch the filterd products but the different condition will run as `filter` state is different.
+
+        ```js
+          if (req.body.priceFilter.low !== "" || req.body.priceFilter.high !== "") {
+            var high = Number(req.body.priceFilter.high);
+            let low = Number(req.body.priceFilter.low);
+            console.log(`Price Filter after number ${low} and ${high}`);
+            var ids = await Variants.query(function (qb) {
+              if (low !== 0 && low > high) {
+                console.log("only low value");
+                qb.where("price", ">", low);
+              } else if (low === 0 && high !== 0) {
+                console.log("only high value");
+                qb.where("price", "<", high);
+              } else {
+                console.log("both value");
+
+                qb.whereBetween("price", [low, high]);
+              }
+            })
+              .query({
+                groupBy: "products_id",
+              })
+              .fetchAll({
+                columns: ["products_id"],
+              });
+            ids = ids.toJSON().map((a) => a.products_id);
+            products = products.where("id", "IN", ids);
+          }
+        ```
+        - This condition will return the resulted model for different conditions price `lower than`, `greater than` and `between them`.
+
+        - After that updated model will again run with the query for fetching the products with their variants and assign it to the `results` variable and sent as a response to the user.
+
+      - **CategoryFilter** and **ColorFilter**
+
+        - These components are just responsible for fetching the `category` and `color` names from the database and save in a state `category` and `color`. 
+
+        ```js
+          const [category, setCategory] = useState([]);
+          useEffect(() => {
+            axios.get("http://localhost:3001/products/categories").then((response) => {
+              setCategory(response.data);
+            });
+          }, []);
+        ```
+
+        ```js
+          const [color, setColor] = useState([]);
+          useEffect(() => {
+            axios.get("http://localhost:3001/variants/color").then((response) => {
+              // console.log(response.data);
+              setColor(response.data);
+            });
+          }, []);
+        ```
+
+        - These both components will import the `Blueprint` component with the props.
+
+          - CategoryFilter
+
+          ```js
+            <Blueprint
+              product={category}
+              attribute={"category"}
+              setProductArray={props.setProductArray}
+              setLoading={props.setLoading}
+              offset={props.offset}
+              setOffset={props.setOffset}
+              setProductMap={props.setProductMap}
+              loading={props.loading}
+              productMap={props.productMap}
+              filterState={props.filterState}
+              filter={props.filter}
+              setFilter={props.setFilter}
+            />
+          ```
+
+          - ColorFilter
+
+          ```js
+            <Blueprint
+              product={color}
+              attribute={"color"}
+              setProductArray={props.setProductArray}
+              setLoading={props.setLoading}
+              offset={props.offset}
+              setOffset={props.setOffset}
+              setProductMap={props.setProductMap}
+              loading={props.loading}
+              productMap={props.productMap}
+              filterState={props.filterState}
+              filter={props.filter}
+              setFilter={props.setFilter}
+            />
+          ```
+
+      - **Blueprint**
+
+        - This component responsible for showing the `category` and `color` values in accordion in sidebar list.
+
+        - It uses conditional rendering to render the category and color values. It checks the `props.attribute` from the `categoryFilter` and `colorFilter` components. In sidebar list it simultaneously shows the `Category` and `Color` accordion with their respected values. In accordion there is checkbox with every values. So that user can select these filter values.
+          ```js
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMore />}>
+                <Typography>
+                  {attribute === "category" ? "Category" : "Color"}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <FormGroup>
+                  {attribute === "category"
+                    ? props.product.map((product) => (
+                        <FormControlLabel
+                          key={product.category}
+                          control={
+                            <Checkbox
+                              checked={Object.values(props.filter)[1].includes(
+                                product.category
+                              )}
+                            />
+                          }
+                          label={product.category}
+                          onChange={(e) =>
+                            filterByAttribute(e.target.checked, product.category)
+                          }
+                        />
+                      ))
+                    : props.product.map((product) => (
+                        <FormControlLabel
+                          key={product.color}
+                          control={
+                            <Checkbox
+                              checked={Object.values(props.filter)[2].includes(
+                                product.color
+                              )}
+                            />
+                          }
+                          label={product.color}
+                          onChange={(e) =>
+                            filterByAttribute(e.target.checked, product.color)
+                          }
+                        />
+                      ))}
+                </FormGroup>
+              </AccordionDetails>
+            </Accordion>
+
+          ```
+        - These checkbox have condition to retain the checked values even if the drawer is closed. You can see in above code that there is checked attribute in these checkbox which checks `filter` state keys `categoryFilter` and `colorFilter` includes these values or not. If includes then that value will remain checked, if not then unchecked.
+
+        - These checkbox have `onChange` event on them which calls the `filterByAttribute` function which takes checked box values and checked state that it is checked or not as a parameter.
+
+        - If it is checked it will fetch that filter product. If user uncheck the checkbox then it will remove that product form the display.
+
+          ```js
+            const filterByAttribute = async (e, attribute) => {
+              // console.log(" ");
+              if (e) {
+                props.offset.current = 0;
+                props.setProductArray(() => []);
+                setFilterProduct((prevState) => new Set(prevState).add(attribute));
+              } else {
+                filterProduct.delete(attribute);
+                if (props.attribute === "category") {
+                  props.filter.categoryFilter.splice(
+                    props.filter.categoryFilter.indexOf(attribute),
+                    1
+                  );
+                  // props.setFilter((prevState) => ({...prevState, categoryFilter : props.filter}))
+                } else if (props.attribute === "color") {
+                  props.filter.colorFilter.splice(
+                    props.filter.colorFilter.indexOf(attribute),
+                    1
+                  );
+                }
+                // this will filter the productMap with the attribute
+                // and save in another variable
+                // then set productMap with that variable
+                // So when user deselect the checkbox then that filtered product will
+                //  remove and updates the state which is responsible for displaying the images.
+                let products =
+                  props.attribute === "category"
+                    ? props.productMap.filter((product) => product.category !== attribute)
+                    : props.attribute === "color" &&
+                      props.productMap.filter(
+                        (product) => product.variants[0].color !== attribute
+                      );
+                props.setProductMap(products);
+
+                // This will always run the
+                // useDidMountEffect which fetch the first filtered products when it changes
+                if(filterProduct.size === 0){
+                  props.offset.current = 0
+                }
+                  if (check) {
+                    setCheck(false);
+                  } else {
+                    setCheck(true);
+                  }
+              }
+            };
+
+          ```
+        - `filterByAttribute(e, attribute)` function first check if the value of e is true or not.
+
+          - If true then it will set the `props.offfset.current` to 0 to get the new products from the start,set empty array to the `props.setProductMap` so to emppty the previos results, and add attribute (where attribute is a checked value) in a  `fiterProduct` set. `filterProduct` set is dependency array of `useDidMountEffect` in the same component. I will explain what it do after explaining the false part.
+
+          - If false then it delete the unchecked value that is attribute from the `filterProduct` set. Then after this it removes that unchecked values from the `props.filter` state keys `categoryFilter` and `colorFilter`. 
+
+          - How it checks unchecked value belongs to the categoryFilter or colorFilter keys. For this it checked the `props.attribute` value if it is category then it splice that value from the categoryFilter key or from the colorFilter key.
+
+          - Now you are thinking that `useEffect` in a `Homepage` component will run as filter is the dependency array for that useEffect. It will run but sometimes when I select both category and color filter. And then remove all the color filters it will not fetch data according to the remaining checked category filter. So for this I've made a condition which updates the state `check` on every deselect. 
+
+          - `check` is also a dependency array for the `useDidMountEffect` in this component.
+
+          - So after delete the attributed from `filter` state it will also `delete` from the `props.productMap` using `filter` function in on `props.productMap` and assign result to the let variable products. 
+
+          - Then set these `products` variable to the `props.productMap`.
+
+        - Now I will explain the `useDidMountEffect` in this component.
+
+          ```js
+            useDidMountEffect(async () => {
+              let attributeArray = Array.from(filterProduct);
+              if (filterProduct.size !== 0) {
+                props.setLoading(false);
+              }
+              if (attribute === "category") {
+                props.setFilter((prevState) => ({
+                  ...prevState,
+                  categoryFilter: [...attributeArray],
+                }));
+              } else if (attribute === "color") {
+                props.setFilter((prevState) => ({
+                  ...prevState,
+                  colorFilter: [...attributeArray],
+                }));
+              }
+            }, [filterProduct, check]);
+          ```
+
+          - This function is responsible for fetching the filtered products on the basis of color and category. It first extracts array from the filterByAttribute set and assign it to the local variable `attributeArray` 
+
+          - Then it check if it is empty or not. If not set the `props.loading` to false using `props.setLoading` function.
+          - Then it again checks the `attribute` variable which have assigned props.attribute value from the colorFilterand categoryFilter component.
+
+          - Then updates the `filter` state keys. and which triggers the useEffect in `Homepage`. Then it calls the fetchData function which calls axios post request to the url with updated filter. Then it fetches the products and displays to the user.
+
+        - Conditions in controller responsible for fetching products accordingto `color` and `category` filters.
+
+          ```js
+            // if the category filter is selected
+            if (req.body.categoryFilter && req.body.categoryFilter.length !== 0) {
+              products = products.where("category", "IN", req.body.categoryFilter);
+            }
+
+            if (req.body.colorFilter && req.body.colorFilter.length !== 0) {
+              var ids = await Variants.where(
+                "color",
+                "IN",
+                req.body.colorFilter
+              ).fetchAll({ columns: ["products_id"] });
+              ids = ids.toJSON().map((a) => a.products_id);
+
+              products = products.where("id", "IN", ids);
+            }
+          ```
+
+          - After that it will same as the other filter components save the updated mdeel with the fetched query in `results` variable and sent the response to the user.
+
+          - Just one condition in the `results` variable query if colorFilter is selected. It checkes the checked colors value and fetch variants table data which are in selected color values array.
+
+          - As in condition I'm fetching the products_id from variant table according to the color values. Then fetch products from products table using these ids.
+
+          - In the results variable I'm fetching those products again but with variants which fetch all the variants even those which have colors not in the selected color array.
+
+          - So for this I've made condition as to fetch only those variants which have selected colors.
+    
+    - Now FilterController is even fetch products according to the different filter combination as every checked filter has their condition which fetched the filtered products and save the models and again run query on that filtered model with new filter. In the last it saves the final result in `results` variable.
+
+  With this User Module documentation will finish here.
